@@ -1,0 +1,44 @@
+{
+  "name": "laser-access",
+  "version": "0.1.0",
+  "description": "VHS Laser Access",
+  "scripts": {
+    "start": "node_modules/.bin/supervisor bin/www",
+    "test": "node_modules/.bin/gulp test"
+  },
+  "dependencies": {
+    "debug": "~2.1.3",
+    "promise": "~6.1.0",
+    "superagent": "~1.1.0",
+    "superagent-promise": "~0.2.0",
+    "supervisor": "~0.6.0",
+    "express": "~4.12.2",
+    "onoff": "~1.0.2",
+    "bluebird": "^2.9.14"
+  },
+  "devDependencies": {
+    "sinon": "^1.14.0",
+    "mocha": "^2.2.1",
+    "gulp": "^3.8.11",
+    "jshint-stylish": "^1.0.1",
+    "gulp-mocha": "^2.0.0",
+    "gulp-jshint": "^1.9.2",
+    "chai": "^2.1.1",
+    "gulp-istanbul": "^0.6.0",
+    "chai-as-promised": "^4.3.0"
+  },
+  "jshintConfig": {
+    "node": true,
+    "globalstrict": true,
+    "globals": {
+      "describe": false,
+      "it": false,
+      "before": false,
+      "beforeEach": false,
+      "after": false,
+      "afterEach": false
+    }
+  },
+  "author": "Garth Cumming",
+  "license": "ISC"
+}
