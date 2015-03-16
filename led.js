@@ -13,6 +13,7 @@ Led.prototype.enable = function(){
     this.on = true;
     if (this.blinkInterval){
         clearInterval(this.blinkInterval);
+        this.blinkInterval = null;
     }
     return this.gpio.writeAsync(1);
 };
@@ -21,6 +22,7 @@ Led.prototype.disable = function(){
     this.on = false;
     if (this.blinkInterval){
         clearInterval(this.blinkInterval);
+        this.blinkInterval = null;
     }
     return this.gpio.writeAsync(0);
 };
@@ -36,6 +38,7 @@ Led.prototype.blink = function(delay){
         this.blinkInterval = setInterval(function(){
             Led.toggle();
         }, delay);
+        this.on = true;
         return this.gpio.writeAsync(1);
     }
     return Promise.resolve();

@@ -11,7 +11,7 @@ var Promise = require("bluebird"),
 var ON = 1;
 var OFF = 0;
 chai.use(chaiAsPromised);
-chai.should();
+var should = chai.should();
 
 describe("Laser startup and shutdown", function() {
     var state = mockgpio.state;
@@ -26,17 +26,24 @@ describe("Laser startup and shutdown", function() {
     });
 
     it("turns on the main switch, only the chiller turns on", function () {
+        sinon.spy(laserAccess.LEDs.green, "blink");
         laserAccess.startAll();
         state.should.have.property(gpios.GPIO_CHILLER, ON);
+        laserAccess.LEDs.green.blink.should.have.property("calledOnce", true);
+        laserAccess.LEDs.green.blink.restore();
     });
 
     it("turns on the laser and blower after 45 seconds", function () {
+        sinon.spy(laserAccess.LEDs.green, "enable");
         state.should.have.property(gpios.GPIO_LASER, OFF);
         state.should.have.property(gpios.GPIO_BLOWER, OFF);
+        laserAccess.LEDs.green.enable.should.have.property("calledOnce", false);
         clock.tick(45 * 1000);
         state.should.have.property(gpios.GPIO_CHILLER, ON);
         state.should.have.property(gpios.GPIO_LASER, ON);
         state.should.have.property(gpios.GPIO_BLOWER, ON);
+        laserAccess.LEDs.green.enable.should.have.property("calledOnce", true);
+        laserAccess.LEDs.green.enable.restore();
     });
 
     it("turns off the main switch, only the laser turns off", function () {
@@ -217,5 +224,15 @@ describe("Status LED tests", function(){
             clock.tick(300);
             state.should.have.property(gpios.GPIO_LED_RED, OFF);
         })
+    });
+
+    it("starts blinking the red LED yet again", function(){
+        return laserAccess.LEDs.red.blink(300).then(function(){
+            state.should.have.property(gpios.GPIO_LED_RED, ON);
+            clock.tick(300);
+            state.should.have.property(gpios.GPIO_LED_RED, OFF);
+            clock.tick(300);
+            state.should.have.property(gpios.GPIO_LED_RED, ON);
+        });
     });
 });
