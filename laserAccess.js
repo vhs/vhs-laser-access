@@ -33,6 +33,8 @@ var LEDs = {
     red: new Led(new Gpio(gpios.GPIO_LED_RED, 'out'))
 };
 
+LEDs.red.enable();
+
 module.exports.LEDs = LEDs;
 
 Promise.promisifyAll(laser);

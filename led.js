@@ -36,7 +36,7 @@ Led.prototype.blink = function(delay){
         this.blinkInterval = setInterval(function(){
             Led.toggle();
         }, delay);
-        return this.enable();
+        return this.gpio.writeAsync(1);
     }
     return Promise.resolve();
 };
