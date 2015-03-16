@@ -11,6 +11,9 @@ function Led(gpio){
 
 Led.prototype.enable = function(){
     this.on = true;
+    if (this.blinkInterval){
+        clearInterval(this.blinkInterval);
+    }
     return this.gpio.writeAsync(1);
 };
 

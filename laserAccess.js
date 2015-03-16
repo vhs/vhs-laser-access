@@ -12,8 +12,8 @@ var gpios = {
     GPIO_BLOWER: 24,
     GPIO_CHILLER: 25,
 
-    GPIO_LED_GREEN: 13,
-    GPIO_LED_RED: 15,
+    GPIO_LED_GREEN: 27,
+    GPIO_LED_RED: 22,
 
     GPIO_MAIN_SWITCH: 4
 };
@@ -85,6 +85,7 @@ module.exports.startAll = function(){
     startTimers.abortStartup = false;
     return new Promise(function(resolve, reject){
         var startLaserAndBlower = function(){
+            LEDs.green.enable();
             return Promise.all([startLaser(), startBlower()])
                 .then(resolve)
                 .catch(reject);
@@ -100,6 +101,7 @@ module.exports.startAll = function(){
             debug("Chiller was already running, start right away");
             return startLaserAndBlower();
         }
+        LEDs.green.blink(300);
         startChiller().
             then(function(){
                 startTimers.startup = setTimeout(function(){
@@ -108,6 +110,7 @@ module.exports.startAll = function(){
                         debug("Startup aborted");
                         resolve("Startup aborted");
                     } else {
+
                         chillerRunning = true;
                         startLaserAndBlower();
                     }
@@ -123,11 +126,15 @@ module.exports.shutdownAll = function(){
         return new Promise(function (resolve, reject) {
             shutdownLaser()
                 .then(function () {
+                    return LEDs.green.blink(300);
+                })
+                .then(function(){
                     startTimers.shutdown = setTimeout(function () {
                         startTimers.shutdown = null;
                         if (startTimers.abortShutdown){
                             resolve("Shutdown aborted");
                         } else {
+                            LEDs.green.disable();
                             Promise.all([shutdownBlower(), shutdownChiller()])
                                 .then(resolve)
                                 .catch(reject);
