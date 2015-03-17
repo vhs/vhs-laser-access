@@ -45,6 +45,7 @@ Promise.promisifyAll(mainSwitch);
 var startTimers = {};
 var laserWasStarted = false;
 var chillerRunning = false;
+var authorized = false;
 
 function startLaser(){
     debug("Laser started");
@@ -86,6 +87,9 @@ function mainSwitchOn(){
 module.exports.startAll = function(){
     startTimers.abortStartup = false;
     return new Promise(function(resolve, reject){
+        if (!authorized) {
+            return reject("Access Denied");
+        }
         var startLaserAndBlower = function(){
             LEDs.green.enable();
             return Promise.all([startLaser(), startBlower()])
@@ -153,6 +157,19 @@ module.exports.shutdownAll = function(){
             shutdownChiller()
         ]);
     }
+};
+
+var disableAccessTimer;
+
+module.exports.grantAccess = function(){
+    authorized = true;
+    if (disableAccessTimer){
+        clearTimeout(disableAccessTimer);
+    }
+    disableAccessTimer = setTimeout(function(){
+        authorized = false;
+        disableAccessTimer = null;
+    }, 10000);
 };
 
 var switchTimeout;

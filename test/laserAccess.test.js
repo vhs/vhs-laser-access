@@ -25,6 +25,19 @@ describe("Laser startup and shutdown", function() {
         clock = sinon.useFakeTimers();
     });
 
+    it("turns on the main switch but access has not been granted yet", function(){
+        var promise = laserAccess.startAll().should.eventually.be.rejected;
+        clock.tick(45 * 1000);
+        return promise;
+    });
+
+    it("grants access to the laser", function(){
+        laserAccess.grantAccess();
+        
+        //Grant again, should replace the existing timer;
+        laserAccess.grantAccess();
+    });
+
     it("turns on the main switch, only the chiller turns on", function () {
         sinon.spy(laserAccess.LEDs.green, "blink");
         laserAccess.startAll();
@@ -65,6 +78,7 @@ describe("Laser startup and shutdown", function() {
     });
 
     it("turns on the main switch", function () {
+        laserAccess.grantAccess();
         laserAccess.startAll();
         state.should.have.property(gpios.GPIO_LASER, OFF);
         state.should.have.property(gpios.GPIO_CHILLER, ON);
@@ -85,6 +99,7 @@ describe("Laser startup and shutdown", function() {
     });
     
     it("turns the switch on again, only laser should start", function() {
+        laserAccess.grantAccess();
         state.should.have.property(gpios.GPIO_LASER, OFF);
         state.should.have.property(gpios.GPIO_CHILLER, OFF);
         state.should.have.property(gpios.GPIO_BLOWER, OFF);
@@ -107,6 +122,7 @@ describe("Laser startup and shutdown", function() {
 
     it("turns the switch back on while shutting down, should start right away", function(){
         clock.tick(2 * 60 * 1000);
+        laserAccess.grantAccess();
         laserAccess.startAll();
         state.should.have.property(gpios.GPIO_LASER, ON);
         state.should.have.property(gpios.GPIO_CHILLER, ON);
