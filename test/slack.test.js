@@ -26,7 +26,7 @@ describe("Slack API client", function(){
         return slack.usersForGroup("token", "GROUP_INVALID")
             .then(function(groups){
                 groups.should.have.length(0);
-            })
+            });
     });
 
 });

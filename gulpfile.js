@@ -21,7 +21,7 @@ gulp.task('unittest', function () {
         .on('finish', function () {
             gulp.src(['test/*.test.js'])
                 .pipe(mocha({reporter: 'nyan'}))
-                .pipe(istanbul.writeReports())
+                .pipe(istanbul.writeReports());
         });
 });
 

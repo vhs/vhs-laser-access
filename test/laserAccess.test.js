@@ -222,7 +222,7 @@ describe("Status LED tests", function(){
             })
             .then(function(){
                 state.should.have.property(gpios.GPIO_LED_GREEN, OFF);
-            })
+            });
     });
 
     it("starts blinking the red LED", function(){
@@ -251,7 +251,7 @@ describe("Status LED tests", function(){
             state.should.have.property(gpios.GPIO_LED_RED, OFF);
             clock.tick(300);
             state.should.have.property(gpios.GPIO_LED_RED, OFF);
-        })
+        });
     });
 
     it("starts blinking the red LED yet again", function(){
