@@ -1,0 +1,9 @@
+{
+  "slack": {
+    "clientID": "<clientId>",
+    "clientSecret": "<secret>",
+    "team": "<teamId>",
+    "adminGroup": "<adminGroupId>"
+  },
+  "callbackHost": "http://localhost:3000"
+}

@@ -15,7 +15,7 @@ gulp.task('lint', function() {
 });
 
 gulp.task('unittest', function () {
-    return gulp.src(['*.js'])
+    return gulp.src(['*.js', 'routes/**/*.js'])
         .pipe(istanbul()) // Covering files
         .pipe(istanbul.hookRequire()) // Force `require` to return covered files
         .on('finish', function () {

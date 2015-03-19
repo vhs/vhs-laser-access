@@ -1,0 +1,49 @@
+{
+  "ok": true,
+  "groups": [
+    {
+      "id": "GROUP_ID_1",
+      "name": "Test Group 1",
+      "is_group": true,
+      "created": 1425020177,
+      "creator": "CREATOR_ID",
+      "is_archived": false,
+      "members": [
+        "CREATOR_ID",
+        "MEMBER_ID"
+      ],
+      "topic": {
+        "value": "",
+        "creator": "",
+        "last_set": 0
+      },
+      "purpose": {
+        "value": "",
+        "creator": "",
+        "last_set": 0
+      }
+    },
+    {
+      "id": "GROUP_ID_2",
+      "name": "Test Group 2",
+      "is_group": true,
+      "created": 1425020177,
+      "creator": "CREATOR_ID",
+      "is_archived": false,
+      "members": [
+        "CREATOR_ID",
+        "MEMBER_ID_2"
+      ],
+      "topic": {
+        "value": "",
+        "creator": "",
+        "last_set": 0
+      },
+      "purpose": {
+        "value": "",
+        "creator": "",
+        "last_set": 0
+      }
+    }
+  ]
+}

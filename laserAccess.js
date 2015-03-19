@@ -25,7 +25,7 @@ var Promise = require('bluebird'),
     laser = new Gpio(gpios.GPIO_LASER, 'out'),
     blower = new Gpio(gpios.GPIO_BLOWER, 'out'),
     chiller = new Gpio(gpios.GPIO_CHILLER, 'out'),
-    debug = require('debug')('laser'),
+    debug = require('debug')('laser:control'),
     mainSwitch = new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both');
 
 var LEDs = {

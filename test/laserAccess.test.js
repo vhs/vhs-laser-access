@@ -25,6 +25,10 @@ describe("Laser startup and shutdown", function() {
         clock = sinon.useFakeTimers();
     });
 
+    after(function(){
+        clock.restore();
+    });
+
     it("turns on the main switch but access has not been granted yet", function(){
         var promise = laserAccess.startAll().should.eventually.be.rejected;
         clock.tick(45 * 1000);
@@ -33,7 +37,7 @@ describe("Laser startup and shutdown", function() {
 
     it("grants access to the laser", function(){
         laserAccess.grantAccess();
-        
+
         //Grant again, should replace the existing timer;
         laserAccess.grantAccess();
     });
@@ -147,6 +151,10 @@ describe("Laser switch testing", function(){
         clock = sinon.useFakeTimers();
     });
 
+    after(function(){
+        clock.restore();
+    });
+
     it("turns the switch on", function(){
         mockgpio.setGpio(gpios.GPIO_MAIN_SWITCH, ON);
         startAllStub.should.have.property("called", false);
@@ -184,6 +192,10 @@ describe("Status LED tests", function(){
         state[gpios.GPIO_LED_GREEN] = 0;
         state[gpios.GPIO_LED_RED] = 0;
         clock = sinon.useFakeTimers();
+    });
+
+    after(function(){
+        clock.restore();
     });
 
     it("turns on a green LED", function(){
