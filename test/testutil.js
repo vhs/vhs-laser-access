@@ -11,6 +11,9 @@ module.exports.getApp = function(){
         mainApp.addHandler("/mock500", function(req, res, next){
             next("Unittest error");
         });
+        mainApp.addHandler("/api/mock500", function(req, res, next){
+            next("Unittest error");
+        });
         init = true;
     }
     return mainApp.app();

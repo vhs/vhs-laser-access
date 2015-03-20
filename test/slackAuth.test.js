@@ -4,6 +4,7 @@ var request = require("supertest-as-promised"),
     testutil = require("./testutil"),
     app = testutil.getApp(),
     config = require('../config'),
+    laser = require('../laserAccess'),
     sinon = require("sinon");
 
 
@@ -20,15 +21,17 @@ describe('Core express tests', function(){
             callback(null, { id: "MEMBER_ID_2", provider: "mock_slack", displayName: "Mock Display" });
         });
         config.slack.adminGroup = "GROUP_ID_2";
+        sinon.stub(laser, "grantAccess", function(){});
         testutil.stubSlack();
     });
 
     after(function(){
+        laser.grantAccess.restore();
         testutil.restoreSlackStub();
     });
 
     it("tries an authenticated page that should not be allowed", function(){
-        return request(app).get("/auth/test")
+        return request(app).post("/api/activate")
             .expect(401);
     });
 
@@ -68,7 +71,7 @@ describe('Core express tests', function(){
     });
 
     it("now tries an authenticated page", function(){
-        return authdAgent.get("/auth/test")
+        return authdAgent.post("/api/activate")
             .expect(200);
     });
 

@@ -2,7 +2,7 @@
 var agent = require('superagent-promise'),
     _ = require('underscore');
 
-module.exports.usersForGroup = function(token, groupId){
+function usersForGroup(token, groupId){
     return agent.get('https://slack.com/api/groups.list')
         .query({
             "token": token
@@ -15,4 +15,16 @@ module.exports.usersForGroup = function(token, groupId){
             }
             return [];
         });
+}
+
+function userIdInGroup(token, groupId, userId) {
+    return usersForGroup(token, groupId)
+        .then(function(members){
+            return members.indexOf(userId) >= 0;
+        });
+}
+
+module.exports = {
+    usersForGroup: usersForGroup,
+    userIdInGroup: userIdInGroup
 };

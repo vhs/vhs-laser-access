@@ -1,7 +1,18 @@
 doctype html
-html
+html(ng-app="app")
   head
-    title= title
-    link(rel='stylesheet', href='/stylesheets/style.css')
-  body
-    block content
+    title=title
+    link(rel='stylesheet', href='/components/bootstrap/dist/css/bootstrap.min.css')
+    meta(name="viewport" content="width=device-width, initial-scale=1")
+
+  body(ng-controller='AppCtrl')
+    div(class='container')
+      block content
+
+    //script(src="/components/jquery/dist/jquery.min.js")
+    script(src="/components/angular/angular.min.js")
+    script(src="/components/angular-bootstrap/ui-bootstrap.min.js")
+
+    //script(src="/components/bootstrap/dist/js/bootstrap.min.js")
+    script(src="/socket.io/socket.io.js")
+    script(src="/js/app.js")

@@ -26,6 +26,8 @@ var Promise = require('bluebird'),
     blower = new Gpio(gpios.GPIO_BLOWER, 'out'),
     chiller = new Gpio(gpios.GPIO_CHILLER, 'out'),
     debug = require('debug')('laser:control'),
+    EventEmitter = require('events').EventEmitter,
+    emitter = new EventEmitter(),
     mainSwitch = new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both');
 
 var LEDs = {
@@ -46,42 +48,64 @@ var startTimers = {};
 var laserWasStarted = false;
 var chillerRunning = false;
 var authorized = false;
+var status = "shutdown";
 
 function startLaser(){
     debug("Laser started");
     laserWasStarted = true;
+    emitter.emit("laser", "laserStarted");
+    laser.online = true;
     return laser.writeAsync(1);
 }
 
 function shutdownLaser(){
     debug("Laser shutdown");
     laserWasStarted = false;
+    emitter.emit("laser", "laserShutdown");
+    laser.online = false;
     return laser.writeAsync(0);
 }
 
 function startBlower(){
     debug("Blower started");
+    emitter.emit("laser", "blowerStarted");
+    blower.online = true;
     return blower.writeAsync(1);
 }
 
 function shutdownBlower(){
     debug("Blower shutdown");
+    emitter.emit("laser", "blowerShutdown");
+    blower.online = false;
     return blower.writeAsync(0);
 }
 
 function startChiller(){
     debug("Chiller started");
+    emitter.emit("laser", "chillerStarted");
+    chiller.online = true;
     return chiller.writeAsync(1);
 }
 
 function shutdownChiller(){
     debug("Chiller shutdown");
     chillerRunning = false;
+    emitter.emit("laser", "chillerShutdown");
+    chiller.online = false;
     return chiller.writeAsync(0);
 }
 
 function mainSwitchOn(){
     return mainSwitch.readSync() == 1;
+}
+
+function setStatus(s){
+    status = s;
+    emitter.emit("status", s);
+}
+
+function getStatus(){
+    return status;
 }
 
 module.exports.startAll = function(){
@@ -92,6 +116,8 @@ module.exports.startAll = function(){
         }
         var startLaserAndBlower = function(){
             LEDs.green.enable();
+            setStatus("ready");
+
             return Promise.all([startLaser(), startBlower()])
                 .then(resolve)
                 .catch(reject);
@@ -108,6 +134,7 @@ module.exports.startAll = function(){
             return startLaserAndBlower();
         }
         LEDs.green.blink(300);
+        setStatus("starting");
         startChiller().
             then(function(){
                 startTimers.startup = setTimeout(function(){
@@ -116,7 +143,6 @@ module.exports.startAll = function(){
                         debug("Startup aborted");
                         resolve("Startup aborted");
                     } else {
-
                         chillerRunning = true;
                         startLaserAndBlower();
                     }
@@ -127,11 +153,13 @@ module.exports.startAll = function(){
 
 module.exports.shutdownAll = function(){
     startTimers.abortShutdown = false;
+    setStatus("shutting down");
     if (laserWasStarted) {
         //Shutdown after a delay
         return new Promise(function (resolve, reject) {
             shutdownLaser()
                 .then(function () {
+                    setStatus("shutdown");
                     return LEDs.green.blink(300);
                 })
                 .then(function(){
@@ -140,6 +168,7 @@ module.exports.shutdownAll = function(){
                         if (startTimers.abortShutdown){
                             resolve("Shutdown aborted");
                         } else {
+                            setStatus("shutdown");
                             LEDs.green.disable();
                             Promise.all([shutdownBlower(), shutdownChiller()])
                                 .then(resolve)
@@ -151,6 +180,7 @@ module.exports.shutdownAll = function(){
     } else {
         //Shutdown right away, cancel any timers
         startTimers.abortStartup = true;
+        setStatus("shutdown");
         return Promise.all([
             shutdownLaser(),
             shutdownBlower(),
@@ -162,11 +192,14 @@ module.exports.shutdownAll = function(){
 var disableAccessTimer;
 
 module.exports.grantAccess = function(){
+    debug("Grant access request");
     authorized = true;
+    emitter.emit("access", "access granted");
     if (disableAccessTimer){
         clearTimeout(disableAccessTimer);
     }
     disableAccessTimer = setTimeout(function(){
+        emitter.emit("access", "awaiting access");
         authorized = false;
         disableAccessTimer = null;
     }, 10000);
@@ -185,3 +218,9 @@ mainSwitch.watch(function(){
         }
     }, 500);
 });
+
+module.exports.on = function(event, listener) {
+    return emitter.on(event, listener);
+};
+
+module.exports.getStatus = getStatus;

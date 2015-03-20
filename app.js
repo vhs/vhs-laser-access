@@ -10,6 +10,9 @@ var express = require('express'),
     routes = require('./routes');
 
 var app = express();
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
+
 var init = false;
 
 // view engine setup
@@ -25,8 +28,6 @@ app.use(session({
     secret: 'lasers - pew pew pew',
     proxy: true
 }));
-
-//app.use('/app', express.static(path.join(__dirname, 'app')));
 
 module.exports.addHandler = function(path, handler){
     app.use(path, handler);
@@ -61,3 +62,6 @@ module.exports.app = function(){
 
     return app;
 };
+
+module.exports.io = io;
+module.exports.server = server;

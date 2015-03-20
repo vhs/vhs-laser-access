@@ -24,4 +24,16 @@ describe('Core express tests', function(){
             .expect(404);
     });
 
+    it("checks that 404s are handled on the api", function(){
+        return request(app)
+            .get("/api/mock404")
+            .expect(404);
+    });
+
+    it("checks that 500s are handled on the api", function(){
+        return request(app)
+            .get("/api/mock500")
+            .expect(500);
+    });
+
 });

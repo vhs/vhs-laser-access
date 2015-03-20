@@ -3,7 +3,7 @@
 var express = require('express'),
     router = express.Router(),
     passport = require('passport'),
-    debug = require('debug')('laser:auth'),
+    debug = require('debug')('laser:web'),
     slack = require('../slack'),
     SlackStrategy = require('passport-slack').Strategy;
 
@@ -17,12 +17,17 @@ passport.use(
         },
         function(accessToken, refreshToken, profile, done) {
             debug(profile);
-            done(null, {
-                id: profile.id,
-                provider: profile.provider,
-                name: profile.displayName,
-                accessToken: accessToken
-            });
+            slack.userIdInGroup(accessToken, config.slack.adminGroup, profile.id)
+                .then(function(isAdmin){
+                    done(null, {
+                        id: profile.id,
+                        provider: profile.provider,
+                        name: profile.displayName,
+                        admin: isAdmin,
+                        accessToken: accessToken
+                    });
+                })
+                .catch(done);
         })
 );
 
@@ -42,7 +47,7 @@ module.exports.addMiddleware = function (app) {
 
 router.get("/slack/callback", passport.authenticate('slack', {
         failureRedirect: '/error',
-        successRedirect: '/auth/test'
+        successRedirect: '/'
     }));
 
 
@@ -67,6 +72,16 @@ router.get("/test", function(req, res, next){
         })
         .catch(next);
 });
+
+module.exports.mustHaveLaserAccess = function(req, res, next) {
+    if (!req.user) {
+        return next({
+            statusCode: 401,
+            message: "Access Denied"
+        });
+    }
+    next();
+};
 
 module.exports.router = router;
 module.exports.passport = passport;

@@ -45,6 +45,7 @@ describe("Laser startup and shutdown", function() {
     it("turns on the main switch, only the chiller turns on", function () {
         sinon.spy(laserAccess.LEDs.green, "blink");
         laserAccess.startAll();
+        laserAccess.getStatus().should.equal("starting");
         state.should.have.property(gpios.GPIO_CHILLER, ON);
         laserAccess.LEDs.green.blink.should.have.property("calledOnce", true);
         laserAccess.LEDs.green.blink.restore();
@@ -59,12 +60,14 @@ describe("Laser startup and shutdown", function() {
         state.should.have.property(gpios.GPIO_CHILLER, ON);
         state.should.have.property(gpios.GPIO_LASER, ON);
         state.should.have.property(gpios.GPIO_BLOWER, ON);
+        laserAccess.getStatus().should.equal("ready");
         laserAccess.LEDs.green.enable.should.have.property("calledOnce", true);
         laserAccess.LEDs.green.enable.restore();
     });
 
     it("turns off the main switch, only the laser turns off", function () {
         laserAccess.shutdownAll();
+        laserAccess.getStatus().should.equal("shutting down");
         state.should.have.property(gpios.GPIO_LASER, OFF);
         state.should.have.property(gpios.GPIO_CHILLER, ON);
         state.should.have.property(gpios.GPIO_BLOWER, ON);
@@ -76,6 +79,7 @@ describe("Laser startup and shutdown", function() {
         state.should.have.property(gpios.GPIO_CHILLER, ON);
         state.should.have.property(gpios.GPIO_BLOWER, ON);
         clock.tick(3 * 60 * 1000 + ON);
+        laserAccess.getStatus().should.equal("shutdown");
         state.should.have.property(gpios.GPIO_LASER, OFF);
         state.should.have.property(gpios.GPIO_CHILLER, OFF);
         state.should.have.property(gpios.GPIO_BLOWER, OFF);
@@ -84,6 +88,7 @@ describe("Laser startup and shutdown", function() {
     it("turns on the main switch", function () {
         laserAccess.grantAccess();
         laserAccess.startAll();
+        laserAccess.getStatus().should.equal("starting");
         state.should.have.property(gpios.GPIO_LASER, OFF);
         state.should.have.property(gpios.GPIO_CHILLER, ON);
         state.should.have.property(gpios.GPIO_BLOWER, OFF);
@@ -92,11 +97,13 @@ describe("Laser startup and shutdown", function() {
     it("turns off the main switch before the laser starts", function () {
         clock.tick(30 * 1000);
         laserAccess.shutdownAll();
+        laserAccess.getStatus().should.equal("shutdown");
         state.should.have.property(gpios.GPIO_LASER, OFF);
         state.should.have.property(gpios.GPIO_CHILLER, OFF);
         state.should.have.property(gpios.GPIO_BLOWER, OFF);
         clock.tick(5 * 60 * 1000 + ON);
         //Should still stay off
+        laserAccess.getStatus().should.equal("shutdown");
         state.should.have.property(gpios.GPIO_LASER, OFF);
         state.should.have.property(gpios.GPIO_CHILLER, OFF);
         state.should.have.property(gpios.GPIO_BLOWER, OFF);
@@ -108,6 +115,7 @@ describe("Laser startup and shutdown", function() {
         state.should.have.property(gpios.GPIO_CHILLER, OFF);
         state.should.have.property(gpios.GPIO_BLOWER, OFF);
         laserAccess.startAll();
+        laserAccess.getStatus().should.equal("starting");
         state.should.have.property(gpios.GPIO_LASER, OFF);
         state.should.have.property(gpios.GPIO_CHILLER, ON);
         state.should.have.property(gpios.GPIO_BLOWER, OFF);
@@ -118,10 +126,12 @@ describe("Laser startup and shutdown", function() {
         state.should.have.property(gpios.GPIO_LASER, ON);
         state.should.have.property(gpios.GPIO_CHILLER, ON);
         state.should.have.property(gpios.GPIO_BLOWER, ON);
+        laserAccess.getStatus().should.equal("ready");
         laserAccess.shutdownAll();
         state.should.have.property(gpios.GPIO_LASER, OFF);
         state.should.have.property(gpios.GPIO_CHILLER, ON);
         state.should.have.property(gpios.GPIO_BLOWER, ON);
+        laserAccess.getStatus().should.equal("shutting down");
     });
 
     it("turns the switch back on while shutting down, should start right away", function(){
@@ -131,10 +141,12 @@ describe("Laser startup and shutdown", function() {
         state.should.have.property(gpios.GPIO_LASER, ON);
         state.should.have.property(gpios.GPIO_CHILLER, ON);
         state.should.have.property(gpios.GPIO_BLOWER, ON);
+        laserAccess.getStatus().should.equal("ready");
     });
 
     it("should not be turned off after 5 min", function(){
         clock.tick(5 * 60 * 1000);
+        laserAccess.getStatus().should.equal("ready");
         state.should.have.property(gpios.GPIO_LASER, ON);
         state.should.have.property(gpios.GPIO_CHILLER, ON);
         state.should.have.property(gpios.GPIO_BLOWER, ON);

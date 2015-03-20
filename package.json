@@ -22,7 +22,8 @@
     "jade": "^1.9.2",
     "passport": "^0.2.1",
     "underscore": "^1.8.2",
-    "passport-slack": "git+https://github.com/garthomite/passport-slack.git"
+    "passport-slack": "git+https://github.com/garthomite/passport-slack.git",
+    "socket.io": "^1.3.5"
   },
   "devDependencies": {
     "sinon": "^1.14.0",

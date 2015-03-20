@@ -1,5 +1,13 @@
 extends layout
 
 block content
-  h1= title
+  h1 Laser Access
   p Welcome to #{title}
+  if user
+    div(ng-show="activated")
+      div(class="alert alert-success" role="alert") Laser switch is unlocked
+    div(ng-hide="activated")
+      button(class="btn btn-danger" id="activate" ng-click="activate()") Unlock Switch
+  else
+    a(href="/auth/slack" class="btn btn-success") Login with Slack
+
