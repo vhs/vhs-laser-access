@@ -152,6 +152,27 @@ describe("Laser startup and shutdown", function() {
         state.should.have.property(gpios.GPIO_BLOWER, ON);
     });
 
+    it("shuts down but tries to toggle the switch when there is no access", function() {
+        laserAccess.shutdownAll();
+        state.should.have.property(gpios.GPIO_LASER, OFF);
+        state.should.have.property(gpios.GPIO_CHILLER, ON);
+        state.should.have.property(gpios.GPIO_BLOWER, ON);
+    });
+
+    it("tries to start without success then shutsdown", function(){
+        clock.tick(2 * 60 * 1000);
+        laserAccess.startAll().should.eventually.be.rejected; //Note this should not change anything, no access granted
+        laserAccess.shutdownAll();
+        clock.tick(30 * 1000);
+        state.should.have.property(gpios.GPIO_LASER, OFF);
+        state.should.have.property(gpios.GPIO_CHILLER, ON);
+        state.should.have.property(gpios.GPIO_BLOWER, ON);
+        clock.tick(5 * 60 * 1000);
+        state.should.have.property(gpios.GPIO_LASER, OFF);
+        state.should.have.property(gpios.GPIO_CHILLER, OFF);
+        state.should.have.property(gpios.GPIO_BLOWER, OFF);
+    });
+
 });
 
 describe("Laser switch testing", function(){

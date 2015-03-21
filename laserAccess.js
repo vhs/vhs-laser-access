@@ -30,6 +30,8 @@ var Promise = require('bluebird'),
     emitter = new EventEmitter(),
     mainSwitch = new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both');
 
+var t = require('debug')('trace');
+
 var LEDs = {
     green: new Led(new Gpio(gpios.GPIO_LED_GREEN, 'out')),
     red: new Led(new Gpio(gpios.GPIO_LED_RED, 'out'))
@@ -153,6 +155,10 @@ module.exports.startAll = function(){
 
 module.exports.shutdownAll = function(){
     startTimers.abortShutdown = false;
+    if (startTimers.shutdown){
+        debug("Shutdown requested but it's already in progress");
+        return;
+    }
     setStatus("shutting down");
     if (laserWasStarted) {
         //Shutdown after a delay

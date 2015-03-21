@@ -66,7 +66,7 @@ describe('Core express tests', function(){
             })
             .expect(302)
             .then(function(res){
-                res.header.should.have.property("location","/auth/test");
+                res.header.should.have.property("location","/");
             });
     });
 
