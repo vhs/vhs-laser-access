@@ -8,12 +8,12 @@ try {
 }
 
 var gpios = {
-    GPIO_LASER: 23,
-    GPIO_BLOWER: 24,
-    GPIO_CHILLER: 25,
+    GPIO_LASER: 22,
+    GPIO_BLOWER: 27,
+    GPIO_CHILLER: 17,
 
-    GPIO_LED_GREEN: 27,
-    GPIO_LED_RED: 22,
+    GPIO_LED_GREEN: 23,
+    GPIO_LED_RED: 24,
 
     GPIO_MAIN_SWITCH: 4
 };
