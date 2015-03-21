@@ -16,6 +16,7 @@
             } else if (data == "access granted") {
                 $scope.activated = true;
             }
+            $scope.$apply();
         });
         $scope.activate = function() {
             $http.post("/api/activate");

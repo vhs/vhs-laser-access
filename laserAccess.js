@@ -114,6 +114,10 @@ module.exports.startAll = function(){
     startTimers.abortStartup = false;
     return new Promise(function(resolve, reject){
         if (!authorized) {
+            LEDs.red.blink(150);
+            setTimeout(function(){
+                LEDs.red.enable();
+            }, 2000);
             return reject("Access Denied");
         }
         var startLaserAndBlower = function(){
@@ -154,11 +158,11 @@ module.exports.startAll = function(){
 };
 
 module.exports.shutdownAll = function(){
-    startTimers.abortShutdown = false;
-    if (startTimers.shutdown){
+    if (startTimers.shutdown && !startTimers.abortShutdown){
         debug("Shutdown requested but it's already in progress");
         return;
     }
+    startTimers.abortShutdown = false;
     setStatus("shutting down");
     if (laserWasStarted) {
         //Shutdown after a delay
