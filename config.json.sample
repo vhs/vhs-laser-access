@@ -5,5 +5,14 @@
     "team": "<teamId>",
     "adminGroup": "<adminGroupId>"
   },
-  "callbackHost": "http://localhost:3000"
+  "google": {
+    "clientID": "<clientId>",
+    "clientSecret": "<secret>"
+  },
+  "github": {
+    "clientID": "<clientId>",
+    "clientSecret": "<secret>"
+  },
+  "mmpApiKey": "<mmpKey>",
+  "callbackHost": "http://localhost:3000 <callback for the api, cannot be an internal IP for google but it can be a dns name that is internal"
 }
