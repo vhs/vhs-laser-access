@@ -6,6 +6,7 @@ var express = require('express'),
     debug = require('debug')('laser:web'),
     app = require('../app'),
     api = require('./api'),
+    sio = require('../socket'),
     router = express.Router();
 
 
@@ -31,6 +32,9 @@ module.exports.router = router;
 
 module.exports.addMiddleware = function(app){
     auth.addMiddleware(app);
+    sio.io.on('connection', function (socket) {
+        socket.emit('status', laser.getStatus());
+    });
 };
 
 module.exports.addErrorHandlers = function(app){
@@ -38,11 +42,16 @@ module.exports.addErrorHandlers = function(app){
 };
 
 laser.on("laser", function(event){
-    debug("New event from laser " + event);
-    app.io.emit("laser", event);
+    debug("New event from laser " + event.id);
+    sio.io.emit("laser", event);
 });
 
 laser.on("access", function(event){
-    debug("New event from access " + event);
-    app.io.emit("access", event);
+    debug("New event from access " + event.id);
+    sio.io.emit("access", event);
+});
+
+laser.on("status", function(event){
+    debug("New event from status " + event.id);
+    sio.io.emit("status", event);
 });

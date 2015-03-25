@@ -11,7 +11,7 @@ var express = require('express'),
 
 var app = express();
 var server = require('http').Server(app);
-var io = require('socket.io')(server);
+require("./socket").init(server);
 
 var init = false;
 
@@ -63,5 +63,4 @@ module.exports.app = function(){
     return app;
 };
 
-module.exports.io = io;
 module.exports.server = server;

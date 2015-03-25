@@ -1,13 +1,44 @@
 extends layout
 
 block content
-  h1 Laser Access
-  p Welcome to #{title}
-  if user
-    div(ng-show="activated")
-      div(class="alert alert-success" role="alert") Laser switch is unlocked
-    div(ng-hide="activated")
-      button(class="btn btn-danger" id="activate" ng-click="activate()") Unlock Switch
-  else
-    a(href="/auth/slack" class="btn btn-success") Login with Slack
+  div(class="row")
+    div(class="col-md-10 col-md-offset-1")
+      h1 Laser
+      if user
+        div(class="panel panel-default")
+          div(class="panel-heading")
+            h2(class="panel-title pull-right") Status: {{status}}
+            h2(class="panel-title") Laser
+          div(class="panel-body")
+            if user.laser
+              div(ng-show="activated")
+                div(class="alert alert-success" role="alert") Laser switch is unlocked
+              div(ng-hide="activated" class="row")
+                div(class="col-xs-12 col-sm-4 col-sm-offset-4")
+                  button(class="btn btn-danger col-xs-12" id="activate" ng-click="activate()") Unlock Switch
+            else
+              div(class="alert alert-warning" role="alert") Unable to verify your account. Check that your account is&nbsp;
+                a(href="http://membership.hackspace.ca") linked
 
+      if user
+        p(class="text-right")
+          a(href="/auth/logout") Logout
+      else
+        div(class="panel panel-default")
+          div(class="panel-heading")
+            h2(class="panel-title") Login
+
+          div(class="panel-body")
+            p To access the laser cutter, you must be laser certified and your membership account needs to be linked to one of the following providers
+            div(class="row auths")
+              div(class="col-xs-12 col-sm-4")
+                a(href="/auth/slack" class="btn btn-info col-xs-12 col-xl-4 auth") Slack
+
+              div(class="col-xs-12 col-sm-4")
+                a(href="/auth/google" class="btn btn-info col-xs-12 col-xl-4 auth") Google
+
+              div(class="col-xs-12 col-sm-4")
+                a(href="/auth/github" class="btn btn-info col-xs-12 col-xl-4 auth") GitHub
+
+            p If your need to link your membership account&nbsp;
+              a(href="http://membership.hackspace.ca") link it here

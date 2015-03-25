@@ -1,0 +1,11 @@
+.btn.auth {
+    margin-top: 10px;
+}
+
+.row.auths {
+    margin-bottom: 20px;
+}
+
+[ng\:cloak], [ng-cloak], .ng-cloak {
+    display: none !important;
+}

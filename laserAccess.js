@@ -50,12 +50,12 @@ var startTimers = {};
 var laserWasStarted = false;
 var chillerRunning = false;
 var authorized = false;
-var status = "shutdown";
+var status = { id: "shutdown", name: "Shutdown" };
 
 function startLaser(){
     debug("Laser started");
     laserWasStarted = true;
-    emitter.emit("laser", "laserStarted");
+    emitter.emit("laser", { id: "laserStarted", name: "Laser Started"});
     laser.online = true;
     return laser.writeAsync(1);
 }
@@ -63,28 +63,28 @@ function startLaser(){
 function shutdownLaser(){
     debug("Laser shutdown");
     laserWasStarted = false;
-    emitter.emit("laser", "laserShutdown");
+    emitter.emit("laser", { id: "laserShutdown", name: "Laser Shutdown"});
     laser.online = false;
     return laser.writeAsync(0);
 }
 
 function startBlower(){
     debug("Blower started");
-    emitter.emit("laser", "blowerStarted");
+    emitter.emit("laser", { id: "blowerStarted", name: "Blower Started"});
     blower.online = true;
     return blower.writeAsync(1);
 }
 
 function shutdownBlower(){
     debug("Blower shutdown");
-    emitter.emit("laser", "blowerShutdown");
+    emitter.emit("laser", { id: "blowerShutdown", name: "Blower Shutdown"});
     blower.online = false;
     return blower.writeAsync(0);
 }
 
 function startChiller(){
     debug("Chiller started");
-    emitter.emit("laser", "chillerStarted");
+    emitter.emit("laser", { id: "chillerStarted", name: "Chiller/Compressor Started" });
     chiller.online = true;
     return chiller.writeAsync(1);
 }
@@ -92,7 +92,7 @@ function startChiller(){
 function shutdownChiller(){
     debug("Chiller shutdown");
     chillerRunning = false;
-    emitter.emit("laser", "chillerShutdown");
+    emitter.emit("laser", { id: "chillerShutdown", name: "Chiller/Comperssor Shutdown" });
     chiller.online = false;
     return chiller.writeAsync(0);
 }
@@ -122,7 +122,7 @@ module.exports.startAll = function(){
         }
         var startLaserAndBlower = function(){
             LEDs.green.enable();
-            setStatus("ready");
+            setStatus({ id: "ready", name: "Ready" });
 
             return Promise.all([startLaser(), startBlower()])
                 .then(resolve)
@@ -140,7 +140,7 @@ module.exports.startAll = function(){
             return startLaserAndBlower();
         }
         LEDs.green.blink(300);
-        setStatus("starting");
+        setStatus({ id: "starting", name: "Starting" });
         startChiller().
             then(function(){
                 startTimers.startup = setTimeout(function(){
@@ -163,13 +163,13 @@ module.exports.shutdownAll = function(){
         return;
     }
     startTimers.abortShutdown = false;
-    setStatus("shutting down");
+    setStatus({ id: "shuttingDown", name: "Shutting Down" });
     if (laserWasStarted) {
         //Shutdown after a delay
         return new Promise(function (resolve, reject) {
             shutdownLaser()
                 .then(function () {
-                    setStatus("shutdown");
+                    setStatus({ id: "shutdown", name: "Shutdown" });
                     return LEDs.green.blink(300);
                 })
                 .then(function(){
@@ -178,7 +178,7 @@ module.exports.shutdownAll = function(){
                         if (startTimers.abortShutdown){
                             resolve("Shutdown aborted");
                         } else {
-                            setStatus("shutdown");
+                            setStatus({ id: "shutdown", name: "Shutdown" });
                             LEDs.green.disable();
                             Promise.all([shutdownBlower(), shutdownChiller()])
                                 .then(resolve)
@@ -190,7 +190,7 @@ module.exports.shutdownAll = function(){
     } else {
         //Shutdown right away, cancel any timers
         startTimers.abortStartup = true;
-        setStatus("shutdown");
+        setStatus({ id: "shutdown", name: "Shutdown" });
         return Promise.all([
             shutdownLaser(),
             shutdownBlower(),

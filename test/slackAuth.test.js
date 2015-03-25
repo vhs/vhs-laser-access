@@ -44,15 +44,6 @@ describe('Core express tests', function(){
             });
     });
 
-    it("requests auth admin access for slack", function(){
-        return request(app)
-            .get("/auth/slack/admin")
-            .expect(302)
-            .then(function(res){
-                res.header.should.have.property("location").to.contain("https://slack.com/oauth/authorize");
-            });
-    });
-
     it("tries a callback from slack", function(){
         oauthHandler = function(code, params, callback){
             code.should.equal("mock_code");
