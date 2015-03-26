@@ -6,7 +6,7 @@ var express = require('express'),
     cookieParser = require('cookie-parser'),
     bodyParser = require('body-parser'),
     session = require('express-session'),
-    debug = require('debug')('laser'),
+    debug = require('debug')('laser:web'),
     routes = require('./routes');
 
 var app = express();

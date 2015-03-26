@@ -14,5 +14,5 @@
     "clientSecret": "<secret>"
   },
   "mmpApiKey": "<mmpKey>",
-  "callbackHost": "http://localhost:3000 <callback for the api, cannot be an internal IP for google but it can be a dns name that is internal"
+  "callbackHost": "http://localhost:3000 <callback for the api, cannot be an internal IP for google but it can be a dns name that is internal>"
 }

@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "description": "VHS Laser Access",
   "scripts": {
-    "start": "node_modules/.bin/supervisor bin/www",
+    "start": "node_modules/.bin/supervisor -w app.js bin/www",
+    "watch": "node_modules/.bin/supervisor bin/www",
     "test": "node_modules/.bin/gulp test"
   },
   "dependencies": {

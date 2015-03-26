@@ -30,8 +30,6 @@ var Promise = require('bluebird'),
     emitter = new EventEmitter(),
     mainSwitch = new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both');
 
-var t = require('debug')('trace');
-
 var LEDs = {
     green: new Led(new Gpio(gpios.GPIO_LED_GREEN, 'out')),
     red: new Led(new Gpio(gpios.GPIO_LED_RED, 'out'))
