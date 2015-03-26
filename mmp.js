@@ -7,7 +7,7 @@ var config = require('./config'),
 
 
 module.exports.checkAuth = function(service, id){
-    return agent('POST', 'http://membership.hackspace.ca/services/web/AuthService1.svc/CheckService')
+    return agent('POST', config.mmpUrl)
         .send({service:service, id:id})
         .set('X-Api-Key', config.mmpApiKey)
         .end()

@@ -39,9 +39,16 @@ Installing on a RPi does take a while.
 
 Start by adding a new config.json file, see config.json.sample for an example.
 
+## OAuth Access
+
+When setting up OAuth providers, the callback set in the provider should be http://<host>/oauth/(github|google|slack)/callback.
+
+For google callbacks you cannot use internal IP addresses however you can use a host name with a valid domain name regardless if
+the IP resolves to an internal or external address.
+
 ## Testing
 
-If dev dependencies are installed
+If dev dependencies are installed you can run all test cases with
 
     npm test
 
