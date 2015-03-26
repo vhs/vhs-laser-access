@@ -167,7 +167,6 @@ module.exports.shutdownAll = function(){
         return new Promise(function (resolve, reject) {
             shutdownLaser()
                 .then(function () {
-                    setStatus({ id: "shutdown", name: "Shutdown" });
                     return LEDs.green.blink(300);
                 })
                 .then(function(){
@@ -188,6 +187,7 @@ module.exports.shutdownAll = function(){
     } else {
         //Shutdown right away, cancel any timers
         startTimers.abortStartup = true;
+        LEDs.green.disable();
         setStatus({ id: "shutdown", name: "Shutdown" });
         return Promise.all([
             shutdownLaser(),
@@ -210,7 +210,7 @@ module.exports.grantAccess = function(){
         emitter.emit("access", "awaiting access");
         authorized = false;
         disableAccessTimer = null;
-    }, 10000);
+    }, 20000);
 };
 
 var switchTimeout;
