@@ -45,11 +45,33 @@ describe("Laser startup and shutdown", function() {
         });
     });
 
+    it("will never let you shutdown the blower if the laser is running", function(){
+        return laserAccess.shutdownBlower().should.be.rejected;
+    });
+
+    it("will never let you shutdown the chiller if the laser is running", function(){
+        return laserAccess.shutdownChiller().should.be.rejected;
+    });
+
+    it("will now shutdown the laser", function(){
+        return laserAccess.shutdownLaser().should.be.fulfilled;
+    });
+
+    it("will now shutdown the blower", function(){
+        return laserAccess.shutdownBlower().should.be.fulfilled;
+    });
+
+    it("will now shutdown the chiller", function(){
+        return laserAccess.shutdownChiller().should.be.fulfilled;
+    });
+
     it("resets the state", function(){
         state[gpios.GPIO_BLOWER] = 0;
         state[gpios.GPIO_CHILLER] = 0;
         state[gpios.GPIO_LASER] = 0;
     });
+
+
 
     it("turns on the main switch but access has not been granted yet", function(){
         var promise = laserAccess.startAll().should.eventually.be.rejected;

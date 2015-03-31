@@ -81,6 +81,9 @@ function startBlower(){
 }
 
 function shutdownBlower(){
+    if (laser.online){
+        return Promise.reject("Laser is running, will not shutdown blower");
+    }
     debug("Blower shutdown");
     emitter.emit("laser", { id: "blowerShutdown", name: "Blower Shutdown"});
     blower.online = false;
@@ -95,6 +98,9 @@ function startChiller(){
 }
 
 function shutdownChiller(){
+    if (laser.online){
+        return Promise.reject("Laser is running, will not shutdown chiller");
+    }
     debug("Chiller shutdown");
     chillerRunning = false;
     emitter.emit("laser", { id: "chillerShutdown", name: "Chiller/Comperssor Shutdown" });
@@ -241,5 +247,9 @@ module.exports.on = function(event, listener) {
 module.exports.startLaser = startLaser;
 module.exports.startBlower = startBlower;
 module.exports.startChiller = startChiller;
+
+module.exports.shutdownLaser = shutdownLaser;
+module.exports.shutdownBlower = shutdownBlower;
+module.exports.shutdownChiller = shutdownChiller;
 
 module.exports.getStatus = getStatus;
