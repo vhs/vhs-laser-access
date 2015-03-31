@@ -6,9 +6,9 @@ It is also used to control access to the laser. Access is handled by the members
 
 ## Wiring
 
-* Chiller Relay - GPIO17, pin 11
-* Ventilation Relay - GPIO27 pin 13
-* Laser Relay - GPIO22 pin 15
+* Chiller Relay - GPIO17, pin 11 - Green Wire Pin 4
+* Ventilation Relay - GPIO27 pin 13 - Orange Wire Pin 5
+* Laser Relay - GPIO22 pin 15 - White Wire Pin 3
 * Main On/Off Switch - GPIO4 pin 7
 * Green LED - GPIO23 pin 16
 * Red LED - GPIO24 pin 18
@@ -24,6 +24,11 @@ The following pins are used for NFC but it's currently not enabled.
 * NFC CE1 GPIO07 pin 26
 
 ## Installation
+
+Install node.js, one way is with this arm package
+
+    wget http://node-arm.herokuapp.com/node_latest_armhf.deb
+    sudo dpkg -i node_latest_armhf.deb
 
 After node.js is installed from the root of the project run:
 

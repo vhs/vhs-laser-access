@@ -51,6 +51,13 @@ var authorized = false;
 var status = { id: "shutdown", name: "Shutdown" };
 
 function startLaser(){
+    if (!chiller.online){
+        return Promise.reject("Chiller is not running");
+    }
+    if (!blower.online){
+        return Promise.reject("Blower is not running");
+    }
+
     debug("Laser started");
     laserWasStarted = true;
     emitter.emit("laser", { id: "laserStarted", name: "Laser Started"});
@@ -122,7 +129,7 @@ module.exports.startAll = function(){
             LEDs.green.enable();
             setStatus({ id: "ready", name: "Ready" });
 
-            return Promise.all([startLaser(), startBlower()])
+            return Promise.all([startBlower(), startLaser()])
                 .then(resolve)
                 .catch(reject);
         };
@@ -230,5 +237,9 @@ mainSwitch.watch(function(){
 module.exports.on = function(event, listener) {
     return emitter.on(event, listener);
 };
+
+module.exports.startLaser = startLaser;
+module.exports.startBlower = startBlower;
+module.exports.startChiller = startChiller;
 
 module.exports.getStatus = getStatus;
