@@ -57,7 +57,7 @@ router.get("/slack/callback", passport.authenticate('slack', {
 }));
 
 router.get("/slack", passport.authenticate('slack', {
-    scope: [ 'identify' ], team: config.slack.team
+    scope: [ 'identify', 'groups:read' ], team: config.slack.team
 }));
 
 passport.use(new GoogleStrategy({
