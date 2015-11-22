@@ -23,7 +23,7 @@ The following pins are used for NFC but it's currently not enabled.
 * NFC CE0 GPIO08 pin 24
 * NFC CE1 GPIO07 pin 26
 
-## Installation
+## Installation [Ubuntu Installation below]
 
 Install node.js, one way is with this arm package
 
@@ -39,6 +39,24 @@ When installing on the production device you don't need to install the dev depen
     npm install --production
 
 Installing on a RPi does take a while.
+
+## Ubuntu installation
+
+Install node.js:
+
+     sudo apt-get install nodejs
+
+Ubuntu changed the name of the package due to a conflict so you will have to also do the following:
+
+     sudo ln -s /usr/bin/nodejs node
+
+After node.js is installed from the root of the project run:
+
+    npm install
+
+When installing on the production device you don't need to install the dev dependencies.
+
+    npm install --production
 
 ## Config
 
