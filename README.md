@@ -48,7 +48,8 @@ Install node.js:
 
 Ubuntu changed the name of the package due to a conflict so you will have to also do the following:
 
-     sudo ln -s /usr/bin/nodejs node
+     cd /usr/bin
+     sudo ln -s nodejs node
 
 After node.js is installed from the root of the project run:
 
