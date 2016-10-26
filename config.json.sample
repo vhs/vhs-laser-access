@@ -13,7 +13,7 @@
     "clientID": "<clientId>",
     "clientSecret": "<secret>"
   },
-  "mmpUrl": "http://membership.hackspace.ca/services/web/AuthService1.svc/CheckService",
+  "mmpUrl": "https://membership.vanhack.ca/services/web/AuthService1.svc/CheckService",
   "mmpApiKey": "<mmpKey>",
   "callbackHost": "http://localhost:3000 <callback for the api, cannot be an internal IP for google but it can be a dns name that is internal>"
 }
