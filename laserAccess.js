@@ -29,7 +29,7 @@ var Promise = require('bluebird'),
     EventEmitter = require('events').EventEmitter,
     emitter = new EventEmitter(),
     mainSwitch = new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both'),
-    request = require('request');
+    rp = require('request-promise');
 
 var LEDs = {
     green: new Led(new Gpio(gpios.GPIO_LED_GREEN, 'out')),
@@ -63,16 +63,20 @@ function startLaser(){
     laserWasStarted = true;
     emitter.emit("laser", { id: "laserStarted", name: "Laser Started"});
     laser.online = true;
-    request.get( "https://api.vanhack.ca/s/vhs/data/laser/update?value=on", function (error, response, body) {
-	  debug( 'updated api - shutdown' );
+    rp( "https://api.vanhack.ca/s/vhs/data/laser/update?value=on" ).then( function(response) {
+	  debug( 'updated api - startup' );
+	}).catch( function( err ) {
+		debug( 'error updating api - startup' );
 	});
     return laser.writeAsync(1);
 }
 
 function shutdownLaser(){
     debug("Laser shutdown");
-    request.get( "https://api.vanhack.ca/s/vhs/data/laser/update?value=off", function (error, response, body) {
+    rp( "https://api.vanhack.ca/s/vhs/data/laser/update?value=off" ).then( function(response) {
   	  debug( 'updated api - shutdown' );
+  	}).catch( function( err ) {
+  		debug( 'error updating api - shutdown' );
   	});
     laserWasStarted = false;
     emitter.emit("laser", { id: "laserShutdown", name: "Laser Shutdown"});
