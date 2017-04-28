@@ -28,7 +28,8 @@ var Promise = require('bluebird'),
     debug = require('debug')('laser:control'),
     EventEmitter = require('events').EventEmitter,
     emitter = new EventEmitter(),
-    mainSwitch = new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both');
+    mainSwitch = new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both'),
+    request = require('request');
 
 var LEDs = {
     green: new Led(new Gpio(gpios.GPIO_LED_GREEN, 'out')),
@@ -62,11 +63,17 @@ function startLaser(){
     laserWasStarted = true;
     emitter.emit("laser", { id: "laserStarted", name: "Laser Started"});
     laser.online = true;
+    request.get( "https://api.vanhack.ca/s/vhs/data/laser/update?value=on", function (error, response, body) {
+	  debug( 'updated api - shutdown' );
+	});
     return laser.writeAsync(1);
 }
 
 function shutdownLaser(){
     debug("Laser shutdown");
+    request.get( "https://api.vanhack.ca/s/vhs/data/laser/update?value=off", function (error, response, body) {
+  	  debug( 'updated api - shutdown' );
+  	});
     laserWasStarted = false;
     emitter.emit("laser", { id: "laserShutdown", name: "Laser Shutdown"});
     laser.online = false;
@@ -134,7 +141,6 @@ module.exports.startAll = function(){
         var startLaserAndBlower = function(){
             LEDs.green.enable();
             setStatus({ id: "ready", name: "Ready" });
-
             return Promise.all([startBlower(), startLaser()])
                 .then(resolve)
                 .catch(reject);
@@ -175,6 +181,7 @@ module.exports.shutdownAll = function(){
     }
     startTimers.abortShutdown = false;
     setStatus({ id: "shuttingDown", name: "Shutting Down" });
+
     if (laserWasStarted) {
         //Shutdown after a delay
         return new Promise(function (resolve, reject) {
