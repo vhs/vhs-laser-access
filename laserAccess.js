@@ -29,7 +29,10 @@ var Promise = require('bluebird'),
     EventEmitter = require('events').EventEmitter,
     emitter = new EventEmitter(),
     mainSwitch = new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both'),
-    rp = require('request-promise');
+    rp = require('request-promise'),
+    CryptoJS = require("crypto-js");
+
+var config = require('./config');
 
 var LEDs = {
     green: new Led(new Gpio(gpios.GPIO_LED_GREEN, 'out')),
@@ -51,6 +54,28 @@ var chillerRunning = false;
 var authorized = false;
 var status = { id: "shutdown", name: "Shutdown" };
 
+function sendAPILaserUpdate( status ) {
+	var ts = Math.floor(Date.now()/1000);
+	var requestURI = "/s/vhs/data/laser/update";
+	
+	var formdata = {};
+	formdata.value = status;
+	formdata.ts =  ""+ts;
+	formdata.client = config.api.clientName;
+	
+	var key = ts + JSON.stringify( formdata ) + config.api.clientSecret;
+	
+	var hash = CryptoJS.HmacSHA256( JSON.stringify( formdata ), key );
+	
+	var signedRequestUrl = config.api.baseUrl + requestURI + "?hash=" + hash;
+	
+	return rp.put({
+		url : signedRequestUrl,
+		json: true,
+		form: formdata
+	});
+}
+
 function startLaser(){
     if (!chiller.online){
         return Promise.reject("Chiller is not running");
@@ -63,7 +88,7 @@ function startLaser(){
     laserWasStarted = true;
     emitter.emit("laser", { id: "laserStarted", name: "Laser Started"});
     laser.online = true;
-    rp( "https://api.vanhack.ca/s/vhs/data/laser/update?value=on" ).then( function(response) {
+    sendAPILaserUpdate( "on" ).then( function(response) {
 	  debug( 'updated api - startup' );
 	}).catch( function( err ) {
 		debug( 'error updating api - startup' );
@@ -73,7 +98,7 @@ function startLaser(){
 
 function shutdownLaser(){
     debug("Laser shutdown");
-    rp( "https://api.vanhack.ca/s/vhs/data/laser/update?value=off" ).then( function(response) {
+    sendAPILaserUpdate( "off" ).then( function(response) {
   	  debug( 'updated api - shutdown' );
   	}).catch( function( err ) {
   		debug( 'error updating api - shutdown' );
