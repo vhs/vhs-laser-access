@@ -29,8 +29,8 @@ RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
 
 RUN apt-get update && apt-get install -y nodejs
 
-COPY --from=build /var/run/rpi-tapstack /var/run/rpi-tapstack
+COPY --from=build /var/run/laser-access /var/run/laser-access
 
-WORKDIR /var/run/rpi-tapstack
+WORKDIR /var/run/laser-access
 
 CMD npm start
