@@ -17,7 +17,7 @@
     "express-session": "^1.10.4",
     "jade": "^1.9.2",
     "morgan": "^1.5.2",
-    "onoff": "~1.0.2",
+    "onoff": "^6.0.3",
     "passport": "^0.2.1",
     "passport-github": "^0.1.5",
     "passport-google-oauth": "^0.2.0",
