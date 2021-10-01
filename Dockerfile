@@ -34,3 +34,5 @@ COPY --from=build /var/run/laser-access /var/run/laser-access
 WORKDIR /var/run/laser-access
 
 CMD npm start
+
+EXPOSE 3000
