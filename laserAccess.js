@@ -189,16 +189,24 @@ module.exports.startAll = function(){
         setStatus({ id: "starting", name: "Starting" });
         startChiller().
             then(function(){
-                startTimers.startup = setTimeout(function(){
-                    startTimers.startup = null;
-                    if (startTimers.abortStartup) {
-                        debug("Startup aborted");
-                        resolve("Startup aborted");
-                    } else {
-                        chillerRunning = true;
-                        startLaserAndBlower();
-                    }
-                }, 45 * 1000);
+                startTimers.startup = null;
+                if (startTimers.abortStartup) {
+                    debug("Startup aborted");
+                    resolve("Startup aborted");
+                } else {
+                    chillerRunning = true;
+                    startLaserAndBlower();
+                }
+                // startTimers.startup = setTimeout(function(){
+                //     startTimers.startup = null;
+                //     if (startTimers.abortStartup) {
+                //         debug("Startup aborted");
+                //         resolve("Startup aborted");
+                //     } else {
+                //         chillerRunning = true;
+                //         startLaserAndBlower();
+                //     }
+                // }, 45 * 1000);
             });
     });
 };
