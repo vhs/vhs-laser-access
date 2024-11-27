@@ -38,7 +38,7 @@ var config = require('./config');
 
 var mqtt = require('mqtt');
 
-var mqttClient = mqtt.connect(config.mqtt.brokerUrl); // Replace with your MQTT broker URL
+var mqttClient = mqtt.connect(mqtt://10.100.100.1); // VHS Public Facing MQTT. Should eventually be changed to a private mqtt instance.
 
 var mqttTopic = 'laser/maintenance';
 
