@@ -55,6 +55,9 @@ When setting up OAuth providers, the callback set in the provider should be http
 For google callbacks you cannot use internal IP addresses however you can use a host name with a valid domain name regardless if
 the IP resolves to an internal or external address.
 
+## Check Maintanance Status Over MQTT
+Will check for ok status over MQTT before allowing the laser switch to be unlocked. This status is set by LCC and gives the LCC a quick way to take the laser out of service whenever necessary.
+
 ## Testing
 
 If dev dependencies are installed you can run all test cases with
