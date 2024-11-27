@@ -29,7 +29,8 @@
     "superagent": "~1.1.0",
     "superagent-promise": "^0.2.0",
     "supervisor": "~0.6.0",
-    "underscore": "^1.8.2"
+    "underscore": "^1.8.2",
+    "mqtt": "^4.3.7"  // Added MQTT dependency
   },
   "devDependencies": {
     "sinon": "^1.14.0",
