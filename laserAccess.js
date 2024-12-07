@@ -30,9 +30,39 @@ var Promise = require('bluebird'),
     emitter = new EventEmitter(),
     mainSwitch = new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both'),
     rp = require('request-promise'),
-    CryptoJS = require("crypto-js");
+    CryptoJS = require("crypto-js"),
+    mqtt = require('mqtt');
 
 var config = require('./config');
+
+// MQTT setup
+var mqttClient = mqtt.connect(config.mqttServer ?? 'mqtt://127.0.0.1', config.mqttOptions); // VHS Public Facing MQTT. Should eventually be changed to a private mqtt instance.
+var mqttTopic = config.mqttTopic ?? 'laser/maintenance';
+var maintenanceStatus = 'ok'; // Default status is 'ok'
+
+mqttClient.on('connect', () => {
+    debug('Connected to MQTT broker');
+
+    mqttClient.subscribe(mqttTopic,  (err)=> {
+        if (err) {
+            console.error(`Failed to subscribe to topic: ${mqttTopic}`);
+        } else {
+            debug(`Subscribed to MQTT topic: ${mqttTopic}`);
+        }
+    });
+});
+
+mqttClient.on('message', (topic, message) => {
+    if (topic === mqttTopic) {
+        maintenanceStatus = message.toString(); // Read the message and store it
+
+        debug(`Received message on ${mqttTopic}: ${maintenanceStatus}`);
+    }
+});
+
+mqttClient.on('error', (err) => {
+    console.error('MQTT error:', err)
+})
 
 var LEDs = {
     green: new Led(new Gpio(gpios.GPIO_LED_GREEN, 'out')),
@@ -57,18 +87,18 @@ var status = { id: "shutdown", name: "Shutdown" };
 function sendAPILaserUpdate( status ) {
 	var ts = Math.floor(Date.now()/1000);
 	var requestURI = "/s/vhs/data/laser/update";
-	
+
 	var formdata = {};
 	formdata.value = status;
 	formdata.ts =  ""+ts;
 	formdata.client = config.api.clientName;
-	
+
 	var key = ts + JSON.stringify( formdata ) + config.api.clientSecret;
-	
+
 	var hash = CryptoJS.HmacSHA256( JSON.stringify( formdata ), key );
-	
+
 	var signedRequestUrl = config.api.baseUrl + requestURI + "?hash=" + hash;
-	
+
 	return rp.put({
 		url : signedRequestUrl,
 		json: true,
@@ -158,58 +188,72 @@ function getStatus(){
 }
 
 module.exports.startAll = function(){
+    // Abort startup flag
     startTimers.abortStartup = false;
+
     return new Promise(function(resolve, reject){
+        // Check if the system is authorized first
         if (!authorized) {
-            LEDs.red.blink(150);
+            LEDs.red.blink(150);  // Blink red LED to indicate access denial
             setTimeout(function(){
-                LEDs.red.enable();
+                LEDs.red.enable();  // Disable red LED after 2 seconds
             }, 2000);
             return reject("Access Denied");
         }
+
+        // Check the MQTT status: only proceed if the maintenance status is 'ok'
+        if (maintenanceStatus !== 'ok') {
+            LEDs.red.blink(150);  // Blink red LED to indicate maintenance mode
+            setTimeout(function(){
+                LEDs.red.enable();  // Disable red LED after 2 seconds
+            }, 2000);
+            return reject("Maintenance Overdue: Access Denied");
+        }
+
+        // Function to start the laser and blower components
         var startLaserAndBlower = function(){
-            LEDs.green.enable();
+            LEDs.green.enable();  // Turn on the green LED to indicate readiness
             setStatus({ id: "ready", name: "Ready" });
+
+            // Start both the blower and laser
             return Promise.all([startBlower(), startLaser()])
-                .then(resolve)
-                .catch(reject);
+                .then(resolve)  // Resolve the promise if successful
+                .catch(reject); // Reject the promise if there's an error
         };
 
+        // If there is a shutdown in progress, abort it
         if (startTimers.shutdown) {
-            //Tell the shutdown timers to abort.
             startTimers.abortShutdown = true;
         }
 
+        // If the chiller is already running, start the laser and blower immediately
         if (chillerRunning) {
-            //Start right away, chiller has already been running.
-            debug("Chiller was already running, start right away");
+            debug("Chiller was already running, starting laser and blower immediately");
             return startLaserAndBlower();
         }
-        LEDs.green.blink(300);
+
+        // If the chiller is not running, start it first
+        LEDs.green.blink(300);  // Blink green LED to indicate starting
         setStatus({ id: "starting", name: "Starting" });
+
+        // Start the chiller and proceed with laser and blower startup
         startChiller().
             then(function(){
-                startTimers.startup = null;
+                startTimers.startup = null;  // Clear any existing startup timer
+
+                // If the startup process was aborted, reject
                 if (startTimers.abortStartup) {
                     debug("Startup aborted");
                     resolve("Startup aborted");
                 } else {
+                    // Mark the chiller as running and proceed with starting laser and blower
                     chillerRunning = true;
                     startLaserAndBlower();
                 }
-                // startTimers.startup = setTimeout(function(){
-                //     startTimers.startup = null;
-                //     if (startTimers.abortStartup) {
-                //         debug("Startup aborted");
-                //         resolve("Startup aborted");
-                //     } else {
-                //         chillerRunning = true;
-                //         startLaserAndBlower();
-                //     }
-                // }, 45 * 1000);
             });
     });
 };
+
 
 module.exports.shutdownAll = function(){
     if (startTimers.shutdown && !startTimers.abortShutdown){
