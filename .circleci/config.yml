@@ -1,4 +1,13 @@
 version: 2.1
+
+workflows:
+  my-workflow:
+    jobs:
+      - build:
+          context:
+            - org-global
+            - VHS
+
 jobs:
   build:
     machine:
