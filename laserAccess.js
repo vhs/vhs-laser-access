@@ -30,55 +30,39 @@ var Promise = require('bluebird'),
     emitter = new EventEmitter(),
     mainSwitch = new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both'),
     rp = require('request-promise'),
-    CryptoJS = require("crypto-js");
+    CryptoJS = require("crypto-js"),
+    mqtt = require('mqtt');
 
 var config = require('./config');
 
 // MQTT setup
-
-var mqtt = require('mqtt');
-
-var mqttClient = mqtt.connect(mqtt://10.100.100.1); // VHS Public Facing MQTT. Should eventually be changed to a private mqtt instance.
-
-var mqttTopic = 'laser/maintenance';
-
+var mqttClient = mqtt.connect(config.mqttServer ?? 'mqtt://127.0.0.1', config.mqttOptions); // VHS Public Facing MQTT. Should eventually be changed to a private mqtt instance.
+var mqttTopic = config.mqttTopic ?? 'laser/maintenance';
 var maintenanceStatus = 'ok'; // Default status is 'ok'
 
-
-
-mqttClient.on('connect', function () {
-
+mqttClient.on('connect', () => {
     debug('Connected to MQTT broker');
 
-    mqttClient.subscribe(mqttTopic, function (err) {
-
+    mqttClient.subscribe(mqttTopic,  (err)=> {
         if (err) {
-
-            debug('Failed to subscribe to topic: ' + mqttTopic);
-
+            console.error(`Failed to subscribe to topic: ${mqttTopic}`);
         } else {
-
-            debug('Subscribed to MQTT topic: ' + mqttTopic);
-
+            debug(`Subscribed to MQTT topic: ${mqttTopic}`);
         }
-
     });
-
 });
 
-
-
-mqttClient.on('message', function (topic, message) {
-
+mqttClient.on('message', (topic, message) => {
     if (topic === mqttTopic) {
-
         maintenanceStatus = message.toString(); // Read the message and store it
 
-        debug('Received message on ' + mqttTopic + ': ' + maintenanceStatus);
-
+        debug(`Received message on ${mqttTopic}: ${maintenanceStatus}`);
     }
-
 });
+
+mqttClient.on('error', (err) => {
+    console.error('MQTT error:', err)
+})
 
 var LEDs = {
     green: new Led(new Gpio(gpios.GPIO_LED_GREEN, 'out')),
@@ -103,18 +87,18 @@ var status = { id: "shutdown", name: "Shutdown" };
 function sendAPILaserUpdate( status ) {
 	var ts = Math.floor(Date.now()/1000);
 	var requestURI = "/s/vhs/data/laser/update";
-	
+
 	var formdata = {};
 	formdata.value = status;
 	formdata.ts =  ""+ts;
 	formdata.client = config.api.clientName;
-	
+
 	var key = ts + JSON.stringify( formdata ) + config.api.clientSecret;
-	
+
 	var hash = CryptoJS.HmacSHA256( JSON.stringify( formdata ), key );
-	
+
 	var signedRequestUrl = config.api.baseUrl + requestURI + "?hash=" + hash;
-	
+
 	return rp.put({
 		url : signedRequestUrl,
 		json: true,
@@ -251,7 +235,7 @@ module.exports.startAll = function(){
         // If the chiller is not running, start it first
         LEDs.green.blink(300);  // Blink green LED to indicate starting
         setStatus({ id: "starting", name: "Starting" });
-        
+
         // Start the chiller and proceed with laser and blower startup
         startChiller().
             then(function(){
