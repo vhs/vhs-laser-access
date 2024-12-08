@@ -1,39 +1,42 @@
-"use strict";
+// @ts-nocheck
+'use strict'
 
-var sinon = require("sinon"),
-    Promise = require('bluebird');
+const Bluebird = require('bluebird')
+const sinon = require('sinon')
 
-var init;
+let init
 
-module.exports.getApp = function(){
-    var mainApp = require("../app");
-    if (!init){
-        mainApp.addHandler("/mock500", function(req, res, next){
-            next("Unittest error");
-        });
-        mainApp.addHandler("/api/mock500", function(req, res, next){
-            next("Unittest error");
-        });
-        init = true;
+module.exports.getApp = function () {
+  const mainApp = require('../app')
+  if (!init) {
+    mainApp.addHandler('/mock500', function (_req, _res, next) {
+      next('Unittest error')
+    })
+    mainApp.addHandler('/api/mock500', function (_req, _res, next) {
+      next('Unittest error')
+    })
+    init = true
+  }
+  return mainApp.app()
+}
+
+module.exports.stubSlack = function () {
+  const agent = require('superagent-promise')
+  sinon.stub(agent, 'get', function (_url) {
+    return {
+      query: function () {
+        return this
+      },
+      end: function () {
+        return Bluebird.resolve({
+          body: require('./data/slack_list_groups.json')
+        })
+      }
     }
-    return mainApp.app();
-};
+  })
+}
 
-module.exports.stubSlack = function(){
-    var agent = require("superagent-promise");
-    sinon.stub(agent, "get", function(url){
-        return {
-            query: function(){
-                return this;
-            },
-            end: function(){
-                return Promise.resolve({ body: require('./data/slack_list_groups.json')});
-            }
-        };
-    });
-};
-
-module.exports.restoreSlackStub = function(){
-    var agent = require("superagent-promise");
-    agent.get.restore();
-};
+module.exports.restoreSlackStub = function () {
+  const agent = require('superagent-promise')
+  agent.get.restore()
+}

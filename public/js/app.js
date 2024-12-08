@@ -1,34 +1,36 @@
-(function() {
+// @ts-nocheck
+;(function () {
+  const socket = io.connect()
+  //var activateButton = $("#activate");
 
-    var socket = io.connect();
-    //var activateButton = $("#activate");
+  socket.on('laser', function (data) {
+    console.log(data)
+  })
 
-    socket.on('laser', function (data) {
-        console.log(data);
-    });
+  // @ts-ignore
+  const app = angular.module('app', [])
 
-    var app = angular.module("app", []);
-    app.controller("AppCtrl", function($scope, $http) {
-        $scope.activated = false;
-        $scope.status = "Not sure";
-        socket.on('access', function (data) {
-            if (data == "awaiting access"){
-                $scope.activated = false;
-            } else if (data == "access granted") {
-                $scope.activated = true;
-            }
-            $scope.$apply();
-        });
+  app.controller('AppCtrl', function ($scope, $http) {
+    $scope.activated = false
+    $scope.status = 'Not sure'
+    socket.on('access', function (data) {
+      if (data === 'awaiting access') {
+        $scope.activated = false
+      } else if (data === 'access granted') {
+        $scope.activated = true
+      }
+      $scope.$apply()
+    })
 
-        socket.on('status', function (data) {
-            $scope.status = data.name;
-            $scope.$apply();
-        });
+    socket.on('status', function (data) {
+      $scope.status = data.name
+      $scope.$apply()
+    })
 
-        $scope.activate = function() {
-            $http.post("/api/activate");
-        };
+    $scope.activate = function () {
+      $http.post('/api/activate')
+    }
 
-        $scope.name = "Laser";
-    });
-})();
+    $scope.name = 'Laser'
+  })
+})()

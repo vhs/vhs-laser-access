@@ -6,22 +6,22 @@ It is also used to control access to the laser. Access is handled by the members
 
 ## Wiring
 
-* Chiller Relay - GPIO17, pin 11 - Green Wire Pin 4
-* Ventilation Relay - GPIO27 pin 13 - Orange Wire Pin 5
-* Laser Relay - GPIO22 pin 15 - White Wire Pin 3
-* Main On/Off Switch - GPIO4 pin 7
-* Green LED - GPIO23 pin 16
-* Red LED - GPIO24 pin 18
+- Chiller Relay - GPIO17, pin 11 - Green Wire Pin 4
+- Ventilation Relay - GPIO27 pin 13 - Orange Wire Pin 5
+- Laser Relay - GPIO22 pin 15 - White Wire Pin 3
+- Main On/Off Switch - GPIO4 pin 7
+- Green LED - GPIO23 pin 16
+- Red LED - GPIO24 pin 18
 
 The following pins are used for NFC but it's currently not enabled.
 
-* Buzzer - GPIO18 pin 12
-* NFC Reset GPIO25 pin 22
-* NFC MOSI GPIO10 pin 19
-* NFC MOSO GPIO09 pin 21
-* NFC CLK GPIO11 pin 23
-* NFC CE0 GPIO08 pin 24
-* NFC CE1 GPIO07 pin 26
+- Buzzer - GPIO18 pin 12
+- NFC Reset GPIO25 pin 22
+- NFC MOSI GPIO10 pin 19
+- NFC MOSO GPIO09 pin 21
+- NFC CLK GPIO11 pin 23
+- NFC CE0 GPIO08 pin 24
+- NFC CE1 GPIO07 pin 26
 
 ## Installation [Ubuntu Installation below]
 
@@ -56,6 +56,7 @@ For google callbacks you cannot use internal IP addresses however you can use a 
 the IP resolves to an internal or external address.
 
 ## Check Maintanance Status Over MQTT
+
 Will check for ok status over MQTT before allowing the laser switch to be unlocked. This status is set by LCC and gives the LCC a quick way to take the laser out of service whenever necessary.
 
 ## Testing
@@ -70,4 +71,4 @@ To set the port set the environment variable PORT to whatever port you want to l
 
     npm start
 
-To enable debug logging then set the environment variable DEBUG to laser:* to log all laser related events.
+To enable debug logging then set the environment variable DEBUG to laser:\* to log all laser related events.

@@ -1,12 +1,14 @@
 #!/usr/bin/env node
+// @ts-nocheck
 
-var debug = require('debug')('laser:web');
-var app = require('../app');
+const debug = require('debug')('laser:web')
 
-app.app();
+const app = require('../app')
 
-var server = app.server;
+app.app()
 
-server.listen(process.env.PORT || 3000, function() {
-  debug('Express server listening on port ' + server.address().port);
-});
+const server = app.server
+
+server.listen(process.env.PORT || 3000, function () {
+  debug('Express server listening on port ' + server.address().port)
+})

@@ -1,9 +1,7 @@
 {
   "name": "node-laser-access",
   "version": "0.0.1",
-  "authors": [
-    "garthomite"
-  ],
+  "authors": ["garthomite"],
   "license": "MIT",
   "private": true,
   "dependencies": {

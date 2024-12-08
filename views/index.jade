@@ -1,45 +1,47 @@
 extends layout
 
 block content
-  div(class="row")
-    div(class="col-md-10 col-md-offset-1")
+  .row
+    .col-md-10.col-md-offset-1
       h1 Laser
-        small(class="pull-right") pew pew pew
+        small.pull-right pew pew pew
       if user
-        div(class="panel panel-default")
-          div(class="panel-heading")
-            h2(class="panel-title pull-right") Status: {{status}}
-            h2(class="panel-title") Laser
-          div(class="panel-body")
+        .panel.panel-default
+          .panel-heading
+            h2.panel-title.pull-right Status: {{ status }}
+            h2.panel-title Laser
+          .panel-body
             if user.laser
-              div(ng-show="activated")
-                div(class="alert alert-success" role="alert") Laser switch is unlocked
-              div(ng-hide="activated" class="row")
-                div(class="col-xs-12 col-sm-4 col-sm-offset-4")
-                  button(class="btn btn-danger col-xs-12" id="activate" ng-click="activate()") Unlock Switch
+              div(ng-show='activated')
+                .alert.alert-success(role='alert') Laser switch is unlocked
+              .row(ng-hide='activated')
+                .col-xs-12.col-sm-4.col-sm-offset-4
+                  button#activate.btn.btn-danger.col-xs-12(
+                    ng-click='activate()'
+                  ) Unlock Switch
             else
-              div(class="alert alert-warning" role="alert") Unable to verify your account. Check that your account is&nbsp;
-                a(href="https://membership.vanhack.ca") linked
+              .alert.alert-warning(role='alert') Unable to verify your account. Check that your account is&nbsp;
+                a(href='https://membership.vanhack.ca') linked
 
       if user
-        p(class="text-right")
-          a(href="/auth/logout") Logout
+        p.text-right
+          a(href='/auth/logout') Logout
       else
-        div(class="panel panel-default")
-          div(class="panel-heading")
-            h2(class="panel-title") Login
+        .panel.panel-default
+          .panel-heading
+            h2.panel-title Login
 
-          div(class="panel-body")
+          .panel-body
             p To access the laser cutter, you must be laser certified and your membership account needs to be linked to one of the following providers
-            div(class="row auths")
-              div(class="col-xs-12 col-sm-4")
-                a(href="/auth/slack" class="btn btn-info col-xs-12 col-xl-4 auth") Slack
+            .row.auths
+              .col-xs-12.col-sm-4
+                a.btn.btn-info.col-xs-12.col-xl-4.auth(href='/auth/slack') Slack
 
-              div(class="col-xs-12 col-sm-4")
-                a(href="/auth/google" class="btn btn-info col-xs-12 col-xl-4 auth") Google
+              .col-xs-12.col-sm-4
+                a.btn.btn-info.col-xs-12.col-xl-4.auth(href='/auth/google') Google
 
-              div(class="col-xs-12 col-sm-4")
-                a(href="/auth/github" class="btn btn-info col-xs-12 col-xl-4 auth") GitHub
+              .col-xs-12.col-sm-4
+                a.btn.btn-info.col-xs-12.col-xl-4.auth(href='/auth/github') GitHub
 
             p If your need to link your membership account&nbsp;
-              a(href="https://membership.vanhack.ca") link it here
+              a(href='https://membership.vanhack.ca') link it here

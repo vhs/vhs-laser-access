@@ -1,5 +1,8 @@
-module.exports.io = null;
+// @ts-nocheck
+const io = require('socket.io')
 
-module.exports.init = function(server){
-    module.exports.io = require('socket.io')(server);
+module.exports.io = null
+
+module.exports.init = function (server) {
+  module.exports.io = io(server)
 }

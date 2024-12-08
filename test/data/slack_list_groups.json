@@ -8,10 +8,7 @@
       "created": 1425020177,
       "creator": "CREATOR_ID",
       "is_archived": false,
-      "members": [
-        "CREATOR_ID",
-        "MEMBER_ID"
-      ],
+      "members": ["CREATOR_ID", "MEMBER_ID"],
       "topic": {
         "value": "",
         "creator": "",
@@ -30,10 +27,7 @@
       "created": 1425020177,
       "creator": "CREATOR_ID",
       "is_archived": false,
-      "members": [
-        "CREATOR_ID",
-        "MEMBER_ID_2"
-      ],
+      "members": ["CREATOR_ID", "MEMBER_ID_2"],
       "topic": {
         "value": "",
         "creator": "",
