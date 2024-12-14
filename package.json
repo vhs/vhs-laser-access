@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "description": "VHS Laser Access",
   "scripts": {
-    "start": "node_modules/.bin/supervisor -w app.js bin/www",
-    "watch": "node_modules/.bin/supervisor bin/www",
-    "test": "node_modules/.bin/gulp test"
+    "prepare": "wireit",
+    "start": "wireit",
+    "watch": "wireit",
+    "test": "wireit"
   },
   "dependencies": {
     "bluebird": "^2.9.14",
@@ -65,5 +66,26 @@
     }
   },
   "author": "Garth Cumming",
-  "license": "ISC"
+  "license": "ISC",
+  "wireit": {
+    "test": {
+      "command": "node_modules/.bin/gulp test"
+    },
+    "watch": {
+      "command": "node_modules/.bin/supervisor bin/www",
+      "service": true
+    },
+    "start": {
+      "command": "node_modules/.bin/supervisor -w app.js bin/www",
+      "service": true
+    },
+    "prepare": {
+      "dependencies": [
+        "bower:install"
+      ]
+    },
+    "bower:install": {
+      "command": "bower install"
+    }
+  }
 }
