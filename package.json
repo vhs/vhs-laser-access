@@ -36,6 +36,7 @@
     "@prettier/plugin-pug": "^3.2.0",
     "@tyisi/config-eslint": "^4.0.0",
     "@tyisi/config-prettier": "^1.0.1",
+    "bower": "^1.8.14",
     "chai": "^2.1.1",
     "chai-as-promised": "^4.3.0",
     "eslint": "^9.16.0",
