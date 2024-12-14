@@ -5,3 +5,7 @@ node_modules
 coverage
 config.json
 .project
+public/components/**/
+public/components/**/*
+!public/components/
+.wireit
