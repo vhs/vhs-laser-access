@@ -14,7 +14,6 @@ const Bluebird = require('bluebird')
 const CryptoJS = require('crypto-js')
 const debug = require('debug')('laser:control')
 const mqtt = require('mqtt')
-const rp = require('request-promise')
 
 const config = require('./config')
 const Led = require('./led').Led
@@ -106,11 +105,14 @@ function sendAPILaserUpdate(status) {
 
   const signedRequestUrl = config.api.baseUrl + requestURI + '?hash=' + hash
 
-  return rp.put({
-    url: signedRequestUrl,
-    json: true,
-    form: formdata
-  })
+  return fetch(signedRequestUrl, {
+    method: 'PUT',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(formdata)
+  }).then((response) => response.json())
 }
 
 function startLaser() {
