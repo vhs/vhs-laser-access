@@ -2,7 +2,7 @@
 'use strict'
 
 const sinon = require('sinon')
-const request = require('supertest-as-promised')
+const request = require('supertest')
 
 const config = require('../config')
 const laser = require('../laserAccess')
