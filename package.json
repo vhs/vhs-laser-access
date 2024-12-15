@@ -3,8 +3,6 @@
   "version": "0.1.0",
   "description": "VHS Laser Access",
   "scripts": {
-    "check:format": "wireit",
-    "format": "wireit",
     "lint": "wireit",
     "prepare": "wireit",
     "start": "wireit",
