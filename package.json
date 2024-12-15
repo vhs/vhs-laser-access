@@ -29,8 +29,6 @@
     "passport-google-oauth": "^2.0.0",
     "passport-slack": "git+https://github.com/garthomite/passport-slack.git",
     "pug": "^3.0.3",
-    "request": "^2.88.2",
-    "request-promise": "^4.2.6",
     "socket.io": "^4.8.1",
     "superagent": "~10.1.1",
     "superagent-promise": "^1.1.0",
