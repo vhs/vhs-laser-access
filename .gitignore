@@ -34,8 +34,8 @@ public/components/
 !gulpfile.js
 !prettier.config.js
 
-!package-lock.json
 !package.json
+!pnpm-lock.yaml
 
 !laserAccess.js
 !led.js
