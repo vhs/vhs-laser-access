@@ -1,7 +1,6 @@
 // @ts-nocheck
 'use strict'
 
-const Bluebird = require('bluebird')
 const sinon = require('sinon')
 
 let init
@@ -28,7 +27,7 @@ module.exports.stubSlack = function () {
         return this
       },
       end: function () {
-        return Bluebird.resolve({
+        return Promise.resolve({
           body: require('./data/slack_list_groups.json')
         })
       }
