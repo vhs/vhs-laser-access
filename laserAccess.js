@@ -13,10 +13,10 @@ const EventEmitter = require('events').EventEmitter
 const Bluebird = require('bluebird')
 const CryptoJS = require('crypto-js')
 const debug = require('debug')('laser:control')
-const mqtt = require('mqtt')
 
 const config = require('./config')
 const Led = require('./led').Led
+const { maintenanceStatus } = require('./mqtt')
 
 const gpios = {
   GPIO_LASER: 22,
@@ -37,38 +37,6 @@ const chiller = new Gpio(gpios.GPIO_CHILLER, 'out')
 
 const emitter = new EventEmitter()
 const mainSwitch = new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both')
-
-// MQTT setup
-const mqttClient = mqtt.connect(
-  config.mqttServer ?? 'mqtt://127.0.0.1',
-  config.mqttOptions
-) // VHS Public Facing MQTT. Should eventually be changed to a private mqtt instance.
-const mqttTopic = config.mqttTopic ?? 'laser/maintenance'
-let maintenanceStatus = 'ok' // Default status is 'ok'
-
-mqttClient.on('connect', () => {
-  debug('Connected to MQTT broker')
-
-  mqttClient.subscribe(mqttTopic, (err) => {
-    if (err) {
-      console.error(`Failed to subscribe to topic: ${mqttTopic}`)
-    } else {
-      debug(`Subscribed to MQTT topic: ${mqttTopic}`)
-    }
-  })
-})
-
-mqttClient.on('message', (topic, message) => {
-  if (topic === mqttTopic) {
-    maintenanceStatus = message.toString() // Read the message and store it
-
-    debug(`Received message on ${mqttTopic}: ${maintenanceStatus}`)
-  }
-})
-
-mqttClient.on('error', (err) => {
-  console.error('MQTT error:', err)
-})
 
 const LEDs = {
   green: new Led(new Gpio(gpios.GPIO_LED_GREEN, 'out')),

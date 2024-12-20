@@ -40,5 +40,6 @@ public/components/
 !laserAccess.js
 !led.js
 !mmp.js
+!mqtt.js
 !slack.js
 !socket.js
