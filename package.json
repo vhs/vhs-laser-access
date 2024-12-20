@@ -50,18 +50,6 @@
     "sinon": "^19.0.2",
     "supertest": "^7.0.0"
   },
-  "jshintConfig": {
-    "node": true,
-    "globalstrict": true,
-    "globals": {
-      "describe": false,
-      "it": false,
-      "before": false,
-      "beforeEach": false,
-      "after": false,
-      "afterEach": false
-    }
-  },
   "author": "Garth Cumming",
   "license": "ISC",
   "wireit": {
