@@ -5,7 +5,7 @@ const readline = require('readline')
 
 const debug = require('debug')('laser:gpio')
 
-const laserAccess = require('../lib/laserAccess')
+const { gpios, ON, OFF } = require('../lib/constants')
 
 const state = {
   watch: {}
@@ -36,11 +36,9 @@ MockGpio.prototype.watch = function (callback) {
 }
 
 MockGpio.prototype.printStats = function () {
-  const gpios = laserAccess.gpios
-
-  let status = state[gpios.GPIO_LASER] === 1 ? green('o') : red('o')
-  status += state[gpios.GPIO_BLOWER] === 1 ? green('o') : red('o')
-  status += state[gpios.GPIO_CHILLER] === 1 ? green('o') : red('o')
+  let status = state[gpios.GPIO_LASER] === ON ? green('o') : red('o')
+  status += state[gpios.GPIO_BLOWER] === ON ? green('o') : red('o')
+  status += state[gpios.GPIO_CHILLER] === ON ? green('o') : red('o')
 
   if (status !== this.lastStatus) {
     debug(status)
@@ -79,13 +77,11 @@ if (process.argv[2] && process.argv[2] === '--gpio-in') {
   })
 
   rl.on('line', function (line) {
-    const gpios = laserAccess.gpios
-
     if (line === '0') {
-      state[gpios.GPIO_MAIN_SWITCH] = 0
+      state[gpios.GPIO_MAIN_SWITCH] = OFF
       state.watch[gpios.GPIO_MAIN_SWITCH]()
     } else if (line === '1') {
-      state[gpios.GPIO_MAIN_SWITCH] = 1
+      state[gpios.GPIO_MAIN_SWITCH] = ON
       state.watch[gpios.GPIO_MAIN_SWITCH]()
     }
   })
