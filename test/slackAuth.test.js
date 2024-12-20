@@ -4,8 +4,8 @@
 const sinon = require('sinon')
 const request = require('supertest')
 
-const config = require('../config')
-const laser = require('../laserAccess')
+const config = require('../config.json')
+const laser = require('../lib/laserAccess')
 
 const testutil = require('./testutil')
 

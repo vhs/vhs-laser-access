@@ -8,9 +8,9 @@ const GitHubStrategy = require('passport-github').Strategy
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
 const SlackStrategy = require('passport-slack').Strategy
 
-const config = require('../config')
-const mmp = require('../mmp')
-const slack = require('../slack')
+const config = require('../config.json')
+const mmp = require('../lib/mmp')
+const slack = require('../lib/slack')
 
 const router = express.Router()
 

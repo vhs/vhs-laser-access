@@ -4,8 +4,8 @@
 const debug = require('debug')('laser:web')
 const express = require('express')
 
-const laser = require('../laserAccess')
-const sio = require('../socket')
+const laser = require('../lib/laserAccess')
+const sio = require('../lib/socket')
 
 const api = require('./api')
 const auth = require('./auth')

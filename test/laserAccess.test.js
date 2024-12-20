@@ -5,7 +5,7 @@ const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const sinon = require('sinon')
 
-const laserAccess = require('../laserAccess')
+const laserAccess = require('../lib/laserAccess')
 
 const mockgpio = require('./mock-gpio')
 

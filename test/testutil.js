@@ -6,7 +6,7 @@ const sinon = require('sinon')
 let init
 
 module.exports.getApp = function () {
-  const mainApp = require('../app')
+  const mainApp = require('../lib/app')
   if (!init) {
     mainApp.addHandler('/mock500', function (_req, _res, next) {
       next('Unittest error')

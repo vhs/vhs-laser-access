@@ -4,6 +4,9 @@
 !bin/
 !bin/www
 
+!lib/
+!lib/*
+
 !public/
 !public/**/
 !public/**/*
