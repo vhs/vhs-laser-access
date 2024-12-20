@@ -9,6 +9,8 @@ const laserAccess = require('../lib/laserAccess')
 
 const mockgpio = require('./mock-gpio')
 
+chai.should()
+
 let gpios = laserAccess.gpios
 
 const ON = 1
