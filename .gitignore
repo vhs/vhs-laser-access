@@ -28,7 +28,6 @@ public/components/
 !.prettierignore
 !Dockerfile
 !README.md
-!app.js
 !bower.json
 !buildx-setup.sh
 !buildx.sh
@@ -39,10 +38,3 @@ public/components/
 
 !package.json
 !pnpm-lock.yaml
-
-!laserAccess.js
-!led.js
-!mmp.js
-!mqtt.js
-!slack.js
-!socket.js
