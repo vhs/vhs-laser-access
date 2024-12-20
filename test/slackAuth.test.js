@@ -2,10 +2,10 @@
 'use strict'
 
 const sinon = require('sinon')
-const request = require('supertest-as-promised')
+const request = require('supertest')
 
-const config = require('../config')
-const laser = require('../laserAccess')
+const config = require('../config.json')
+const laser = require('../lib/laserAccess')
 
 const testutil = require('./testutil')
 
@@ -17,6 +17,7 @@ describe('Core express tests', function () {
   before('it has to stub passport', function () {
     const auth = require('../routes/auth')
     const slack = auth.passport._strategies.slack
+
     sinon.stub(
       slack._oauth2,
       'getOAuthAccessToken',
@@ -24,6 +25,7 @@ describe('Core express tests', function () {
         return oauthHandler(code, params, callback)
       }
     )
+
     sinon.stub(slack, 'userProfile', function (_token, callback) {
       callback(null, {
         id: 'MEMBER_ID_2',
@@ -31,8 +33,11 @@ describe('Core express tests', function () {
         displayName: 'Mock Display'
       })
     })
+
     config.slack.adminGroup = 'GROUP_ID_2'
+
     sinon.stub(laser, 'grantAccess', function () {})
+
     testutil.stubSlack()
   })
 
@@ -61,7 +66,9 @@ describe('Core express tests', function () {
       code.should.equal('mock_code')
       callback(null, 'token', 'refresh', {})
     }
+
     authdAgent = request.agent(app)
+
     return authdAgent
       .get('/auth/slack/callback')
       .query({

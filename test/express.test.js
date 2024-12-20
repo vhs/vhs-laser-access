@@ -1,6 +1,7 @@
+// @ts-nocheck
 'use strict'
 
-const request = require('supertest-as-promised')
+const request = require('supertest')
 
 const testutil = require('./testutil')
 

@@ -4,7 +4,7 @@
 const debug = require('debug')('laser:web')
 const express = require('express')
 
-const laser = require('../laserAccess')
+const laser = require('../lib/laserAccess')
 
 const mustHaveLaserAccess = require('./auth').mustHaveLaserAccess
 

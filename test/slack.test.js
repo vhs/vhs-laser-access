@@ -1,6 +1,7 @@
+// @ts-nocheck
 'use strict'
 
-const slack = require('../slack')
+const slack = require('../lib/slack')
 
 const testutil = require('./testutil')
 
