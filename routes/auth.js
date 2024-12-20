@@ -9,7 +9,7 @@ const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
 const SlackStrategy = require('passport-slack').Strategy
 
 const config = require('../config.json')
-const mmp = require('../lib/mmp')
+const nomos = require('../lib/nomos')
 const slack = require('../lib/slack')
 
 const router = express.Router()
@@ -21,7 +21,7 @@ function checkOauthService(user, done) {
     return done(null, user)
   }
 
-  mmp
+  nomos
     .checkAuth(user.provider, user.id)
     .then(function (valid) {
       user.laser = valid
