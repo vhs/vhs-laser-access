@@ -14,7 +14,8 @@ let gpios = laserAccess.gpios
 const ON = 1
 const OFF = 0
 
-chai.use(chaiAsPromised)
+chai.use(chaiAsPromised);
+chai.should();
 
 describe('Laser startup and shutdown', function () {
   const state = mockgpio.state

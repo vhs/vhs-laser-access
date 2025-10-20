@@ -2,10 +2,15 @@
 'use strict'
 
 let Gpio
+
 try {
   Gpio = require('onoff').Gpio
+   // have to try creating a GPIO or else it fails later
+  let testGpio = new Gpio(gpios.GPIO_LASER, 'out')
+  console.log("starting with real GPIOs")
 } catch (_err) {
   Gpio = require('./test/mock-gpio').Gpio
+  console.log("starting with mocked GPIOs")
 }
 
 const EventEmitter = require('events').EventEmitter
@@ -33,55 +38,13 @@ const gpios = {
 
 module.exports.gpios = gpios
 
-let laser, blower, chiller, mainSwitch;
-let LEDs;
-
-function mockGpio(name) {
-  let switchPos = true;
-  let cb = () => {};
-  return {
-    writeSync: value => {
-      switchPos = value;
-      cb(switchPos);
-      console.log(`${name} led now has value: ${switchPos}`);
-    },
-    readSync: () => {
-      return switchPos;
-    },
-    readAsync: () => {
-      return Promise.resolve(switchPos)
-    },
-    writeAsync: (value) => {
-      switchPos = value;
-      cb(switchPos);
-      return Promise.resolve(switchPos);
-    },
-    watch: (callback) => {
-      cb = callback;
-    }
-  }
-}
-
-if (false) {
-  laser = new Gpio(gpios.GPIO_LASER, 'out')
-  blower = new Gpio(gpios.GPIO_BLOWER, 'out')
-  chiller = new Gpio(gpios.GPIO_CHILLER, 'out')
-  mainSwitch = new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both')
-  LEDs = {
-    green: new Led(new Gpio(gpios.GPIO_LED_GREEN, 'out')),
-    red: new Led(new Gpio(gpios.GPIO_LED_RED, 'out'))
-  }
-} else {
-  laser = mockGpio("laser");
-  blower = mockGpio("blower");
-  chiller = mockGpio("chiller");
-  mainSwitch = mockGpio("main switch");
-  let greenLed = mockGpio("green led");
-  let redLed = mockGpio("red led");
-  LEDs = {
-    green: new Led(greenLed),
-    red: new Led(redLed)
-  }
+const laser = new Gpio(gpios.GPIO_LASER, 'out')
+const blower = new Gpio(gpios.GPIO_BLOWER, 'out')
+const chiller = new Gpio(gpios.GPIO_CHILLER, 'out')
+const mainSwitch = new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both')
+const LEDs = {
+  green: new Led(new Gpio(gpios.GPIO_LED_GREEN, 'out')),
+  red: new Led(new Gpio(gpios.GPIO_LED_RED, 'out'))
 }
 
 const emitter = new EventEmitter()

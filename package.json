@@ -42,7 +42,7 @@
     "jshint-stylish": "^2.2.1",
     "mocha": "^11.7.4",
     "prettier": "^3.4.2",
-    "sinon": "^1.14.0",
+    "sinon": "^21.0.0",
     "supertest": "^7.0.0",
     "supertest-as-promised": "^1.0.0",
     "wireit": "^0.14.9"
