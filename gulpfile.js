@@ -13,14 +13,14 @@ const jshintConfig = packageJSON.jshintConfig
 
 gulp.task('lint', function () {
   return gulp
-    .src(['./*.js', 'routes/**/*.js', 'test/**/*.js', 'controller/**/*.js'])
+    .src(['./src/**/*.js'])
     .pipe(jshint(jshintConfig))
     .pipe(jshint.reporter(stylish))
 })
 
 gulp.task('unittest', function () {
   return gulp
-    .src(['*.js', 'routes/**/*.js'])
+    .src(['./src/**/*.js'])
     .pipe(istanbul()) // Covering files
     .pipe(istanbul.hookRequire()) // Force `require` to return covered files
     .on('finish', function () {

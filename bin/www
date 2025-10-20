@@ -3,7 +3,7 @@
 
 const debug = require('debug')('laser:web')
 
-const app = require('../app')
+const app = require('../src/app')
 
 app.app()
 

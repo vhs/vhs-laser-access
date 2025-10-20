@@ -4,7 +4,7 @@ const readline = require('readline')
 
 const debug = require('debug')('laser:gpio')
 
-const laserAccess = require('../laserAccess')
+const laserAccess = require('../src/laserAccess')
 
 const state = {
   watch: {}

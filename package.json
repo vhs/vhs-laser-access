@@ -73,7 +73,7 @@
       "service": true
     },
     "start": {
-      "command": "node_modules/.bin/supervisor -w app.js bin/www",
+      "command": "node_modules/.bin/supervisor -w src/app.js bin/www",
       "service": true
     },
     "prepare": {

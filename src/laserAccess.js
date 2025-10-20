@@ -9,7 +9,7 @@ try {
   let testGpio = new Gpio(gpios.GPIO_LASER, 'out')
   console.log("starting with real GPIOs")
 } catch (_err) {
-  Gpio = require('./test/mock-gpio').Gpio
+  Gpio = require('../test/mock-gpio').Gpio
   console.log("starting with mocked GPIOs")
 }
 
@@ -21,7 +21,7 @@ const debug = require('debug')('laser:control')
 const mqtt = require('mqtt')
 const rp = require('request-promise')
 
-const config = require('./config')
+const config = require('../config')
 const { writeSync } = require('fs')
 const Led = require('./led').Led
 

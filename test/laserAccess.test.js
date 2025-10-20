@@ -5,7 +5,7 @@ const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const sinon = require('sinon')
 
-const laserAccess = require('../laserAccess')
+const laserAccess = require('../src/laserAccess')
 
 const mockgpio = require('./mock-gpio')
 
@@ -97,19 +97,20 @@ describe('Laser startup and shutdown', function () {
     laserAccess.LEDs.green.blink.restore()
   })
 
-  it('turns on the laser and blower after 45 seconds', function () {
-    sinon.spy(laserAccess.LEDs.green, 'enable')
-    state.should.have.property(gpios.GPIO_LASER, OFF)
-    state.should.have.property(gpios.GPIO_BLOWER, OFF)
-    laserAccess.LEDs.green.enable.should.have.property('calledOnce', false)
-    clock.tick(45 * 1000)
-    state.should.have.property(gpios.GPIO_CHILLER, ON)
-    state.should.have.property(gpios.GPIO_LASER, ON)
-    state.should.have.property(gpios.GPIO_BLOWER, ON)
-    laserAccess.getStatus().should.have.property('id', 'ready')
-    laserAccess.LEDs.green.enable.should.have.property('calledOnce', true)
-    laserAccess.LEDs.green.enable.restore()
-  })
+  // it('turns on the laser and blower after 45 seconds', function () {
+  //   // need for this test was eliminated here: https://github.com/vhs/vhs-laser-access/commit/11ae1cd31cdcf21dda93ddc0e1575825e9a73d9a
+  //   sinon.spy(laserAccess.LEDs.green, 'enable')
+  //   state.should.have.property(gpios.GPIO_LASER, OFF)
+  //   state.should.have.property(gpios.GPIO_BLOWER, OFF)
+  //   laserAccess.LEDs.green.enable.should.have.property('calledOnce', false)
+  //   clock.tick(45 * 1000)
+  //   state.should.have.property(gpios.GPIO_CHILLER, ON)
+  //   state.should.have.property(gpios.GPIO_LASER, ON)
+  //   state.should.have.property(gpios.GPIO_BLOWER, ON)
+  //   laserAccess.getStatus().should.have.property('id', 'ready')
+  //   laserAccess.LEDs.green.enable.should.have.property('calledOnce', true)
+  //   laserAccess.LEDs.green.enable.restore()
+  // })
 
   it('turns off the main switch, only the laser turns off', function () {
     laserAccess.shutdownAll()
