@@ -7,8 +7,6 @@ const express = require('express')
 const laser = require('../laserAccess')
 const sio = require('../socket')
 
-const api = require('./api')
-
 const router = express.Router()
 
 function laserStatus(_req, res, next) {
@@ -16,18 +14,34 @@ function laserStatus(_req, res, next) {
   next()
 }
 
-router.use('/', function (req, res, next) {
-  next()
-})
-
 /* Placeholder homepage */
 router.get('/', laserStatus, function (_req, res, _next) {
   res.render('index', { title: 'VHS' })
 })
 
-router.use('/api', api.router)
+router.all('/api/activate', function (_req, res, next) {
+  laser.grantAccess()
+  res.result.ok = true
+  next()
+})
 
 module.exports.router = router
+
+function apiErrorHandler (app, path) {
+  app.use(path, function (err, _req, res, _next) {
+    // jshint ignore:line
+    const response = {
+      msg: err.message,
+      type: err.type,
+      status: err.statusCode || 500
+    }
+    if (response.status === 500) {
+      debug(err)
+    }
+    res.status(err.statusCode || 500)
+    return res.json(response)
+  })
+}
 
 module.exports.addMiddleware = function (app) {
   sio.io.on('connection', function (socket) {
@@ -36,7 +50,7 @@ module.exports.addMiddleware = function (app) {
 }
 
 module.exports.addErrorHandlers = function (app) {
-  api.addErrorHandlers(app, '/api')
+  apiErrorHandler(app, '/api')
 }
 
 laser.on('laser', function (event) {

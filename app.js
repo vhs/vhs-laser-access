@@ -28,7 +28,9 @@ module.exports.addHandler = function (path, handler) {
 module.exports.app = function () {
   if (!init) {
     routes.addMiddleware(app)
+    
     app.use('/', routes.router)
+
     routes.addErrorHandlers(app)
 
     app.use(express.static(path.join(__dirname, 'public')))
