@@ -88,10 +88,10 @@ const emitter = new EventEmitter()
 
 // MQTT setup
 const mqttClient = mqtt.connect(
-  config.mqttServer ?? 'mqtt://127.0.0.1',
+  config.mqttServer || 'mqtt://127.0.0.1',
   config.mqttOptions
 ) // VHS Public Facing MQTT. Should eventually be changed to a private mqtt instance.
-const mqttTopic = config.mqttTopic ?? 'laser/maintenance'
+const mqttTopic = config.mqttTopic || 'laser/maintenance'
 let maintenanceStatus = 'ok' // Default status is 'ok'
 
 mqttClient.on('connect', () => {

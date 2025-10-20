@@ -31,6 +31,6 @@ gulp.task('unittest', function () {
     })
 })
 
-gulp.task('test', ['unittest'])
+gulp.task('test', gulp.series('unittest'))
 
-gulp.task('default', ['lint', 'test'])
+gulp.task('default', gulp.series('lint', 'test'))

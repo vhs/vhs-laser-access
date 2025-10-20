@@ -20,22 +20,6 @@ module.exports.getApp = function () {
   return mainApp.app()
 }
 
-module.exports.stubSlack = function () {
-  const agent = require('superagent-promise')
-  sinon.stub(agent, 'get', function (_url) {
-    return {
-      query: function () {
-        return this
-      },
-      end: function () {
-        return Bluebird.resolve({
-          body: require('./data/slack_list_groups.json')
-        })
-      }
-    }
-  })
-}
-
 module.exports.restoreSlackStub = function () {
   const agent = require('superagent-promise')
   agent.get.restore()
