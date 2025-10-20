@@ -8,7 +8,6 @@ const laser = require('../laserAccess')
 const sio = require('../socket')
 
 const api = require('./api')
-const auth = require('./auth')
 
 const router = express.Router()
 
@@ -18,7 +17,6 @@ function laserStatus(_req, res, next) {
 }
 
 router.use('/', function (req, res, next) {
-  res.locals.user = req.user
   next()
 })
 
@@ -28,12 +26,10 @@ router.get('/', laserStatus, function (_req, res, _next) {
 })
 
 router.use('/api', api.router)
-router.use('/auth', auth.router)
 
 module.exports.router = router
 
 module.exports.addMiddleware = function (app) {
-  auth.addMiddleware(app)
   sio.io.on('connection', function (socket) {
     socket.emit('status', laser.getStatus())
   })

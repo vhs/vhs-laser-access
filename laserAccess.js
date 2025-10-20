@@ -17,6 +17,7 @@ const mqtt = require('mqtt')
 const rp = require('request-promise')
 
 const config = require('./config')
+const { writeSync } = require('fs')
 const Led = require('./led').Led
 
 const gpios = {
@@ -32,12 +33,58 @@ const gpios = {
 
 module.exports.gpios = gpios
 
-const laser = new Gpio(gpios.GPIO_LASER, 'out')
-const blower = new Gpio(gpios.GPIO_BLOWER, 'out')
-const chiller = new Gpio(gpios.GPIO_CHILLER, 'out')
+let laser, blower, chiller, mainSwitch;
+let LEDs;
+
+function mockGpio(name) {
+  let switchPos = true;
+  let cb = () => {};
+  return {
+    writeSync: value => {
+      switchPos = value;
+      cb(switchPos);
+      console.log(`${name} led now has value: ${switchPos}`);
+    },
+    readSync: () => {
+      return switchPos;
+    },
+    readAsync: () => {
+      return Promise.resolve(switchPos)
+    },
+    writeAsync: (value) => {
+      switchPos = value;
+      cb(switchPos);
+      return Promise.resolve(switchPos);
+    },
+    watch: (callback) => {
+      cb = callback;
+    }
+  }
+}
+
+if (false) {
+  laser = new Gpio(gpios.GPIO_LASER, 'out')
+  blower = new Gpio(gpios.GPIO_BLOWER, 'out')
+  chiller = new Gpio(gpios.GPIO_CHILLER, 'out')
+  mainSwitch = new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both')
+  LEDs = {
+    green: new Led(new Gpio(gpios.GPIO_LED_GREEN, 'out')),
+    red: new Led(new Gpio(gpios.GPIO_LED_RED, 'out'))
+  }
+} else {
+  laser = mockGpio("laser");
+  blower = mockGpio("blower");
+  chiller = mockGpio("chiller");
+  mainSwitch = mockGpio("main switch");
+  let greenLed = mockGpio("green led");
+  let redLed = mockGpio("red led");
+  LEDs = {
+    green: new Led(greenLed),
+    red: new Led(redLed)
+  }
+}
 
 const emitter = new EventEmitter()
-const mainSwitch = new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both')
 
 // MQTT setup
 const mqttClient = mqtt.connect(
@@ -70,11 +117,6 @@ mqttClient.on('message', (topic, message) => {
 mqttClient.on('error', (err) => {
   console.error('MQTT error:', err)
 })
-
-const LEDs = {
-  green: new Led(new Gpio(gpios.GPIO_LED_GREEN, 'out')),
-  red: new Led(new Gpio(gpios.GPIO_LED_RED, 'out'))
-}
 
 LEDs.red.enable()
 

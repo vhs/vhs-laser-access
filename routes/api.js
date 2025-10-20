@@ -6,8 +6,6 @@ const express = require('express')
 
 const laser = require('../laserAccess')
 
-const mustHaveLaserAccess = require('./auth').mustHaveLaserAccess
-
 const router = express.Router()
 
 router.use('/', function (_req, res, next) {
@@ -15,7 +13,7 @@ router.use('/', function (_req, res, next) {
   next()
 })
 
-router.all('/activate', mustHaveLaserAccess, function (_req, res, next) {
+router.all('/activate', function (_req, res, next) {
   laser.grantAccess()
   res.result.ok = true
   next()

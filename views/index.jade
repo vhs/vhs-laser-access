@@ -5,43 +5,18 @@ block content
     .col-md-10.col-md-offset-1
       h1 Laser
         small.pull-right pew pew pew
-      if user
-        .panel.panel-default
-          .panel-heading
-            h2.panel-title.pull-right Status: {{ status }}
-            h2.panel-title Laser
-          .panel-body
-            if user.laser
-              div(ng-show='activated')
-                .alert.alert-success(role='alert') Laser switch is unlocked
-              .row(ng-hide='activated')
-                .col-xs-12.col-sm-4.col-sm-offset-4
-                  button#activate.btn.btn-danger.col-xs-12(
-                    ng-click='activate()'
-                  ) Unlock Switch
-            else
-              .alert.alert-warning(role='alert') Unable to verify your account. Check that your account is&nbsp;
-                a(href='https://membership.vanhack.ca') linked
-
-      if user
-        p.text-right
-          a(href='/auth/logout') Logout
-      else
-        .panel.panel-default
-          .panel-heading
-            h2.panel-title Login
-
-          .panel-body
-            p To access the laser cutter, you must be laser certified and your membership account needs to be linked to one of the following providers
-            .row.auths
-              .col-xs-12.col-sm-4
-                a.btn.btn-info.col-xs-12.col-xl-4.auth(href='/auth/slack') Slack
-
-              .col-xs-12.col-sm-4
-                a.btn.btn-info.col-xs-12.col-xl-4.auth(href='/auth/google') Google
-
-              .col-xs-12.col-sm-4
-                a.btn.btn-info.col-xs-12.col-xl-4.auth(href='/auth/github') GitHub
-
-            p If your need to link your membership account&nbsp;
-              a(href='https://membership.vanhack.ca') link it here
+      .panel.panel-default
+        .panel-heading
+          h2.panel-title.pull-right Status: {{ status }}
+          h2.panel-title Laser
+        .panel-body
+          div(ng-show='activated')
+            .alert.alert-success(role='alert') Laser switch is unlocked
+          .row(ng-hide='activated')
+            .col-xs-12.col-sm-4.col-sm-offset-4
+              button#activate.btn.btn-danger.col-xs-12(
+                ng-click='activate()'
+              ) Unlock Switch
+          p.text-right
+            a(href='/auth/logout') Logout
+          

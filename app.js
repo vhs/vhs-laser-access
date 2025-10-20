@@ -4,11 +4,8 @@
 const http = require('http')
 const path = require('path')
 
-const bodyParser = require('body-parser')
-const cookieParser = require('cookie-parser')
 const debug = require('debug')('laser:web')
 const express = require('express')
-const session = require('express-session')
 
 const routes = require('./routes')
 
@@ -23,18 +20,6 @@ let init = false
 // view engine setup
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade')
-
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(cookieParser())
-app.use(
-  session({
-    resave: false,
-    saveUninitialized: false,
-    secret: 'lasers - pew pew pew',
-    proxy: true
-  })
-)
 
 module.exports.addHandler = function (path, handler) {
   app.use(path, handler)
