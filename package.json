@@ -63,18 +63,27 @@
   "license": "ISC",
   "wireit": {
     "test": {
-      "command": "NODE_ENV=test nyc mocha --reporter nyan test/*.test.js"
+      "command": "NODE_ENV=test nyc mocha --reporter nyan test/*.test.js",
+      "dependencies": [
+        "build"
+      ]
     },
     "lint": {
       "command": "jshint --reporter=node_modules/jshint-stylish src"
     },
     "watch": {
       "command": "supervisor dist/bin/www.js",
-      "service": true
+      "service": true,
+      "dependencies": [
+        "build"
+      ]
     },
     "start": {
       "command": "supervisor dist/bin/www.js",
-      "service": true
+      "service": true,
+      "dependencies": [
+        "build"
+      ]
     },
     "build": {
       "command": "tsc -p tsconfig.json"

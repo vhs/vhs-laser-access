@@ -1,6 +1,6 @@
 import CryptoJS from 'crypto-js'
 import debugLib from 'debug'
-import config from '../config.json'
+import { config } from './config'
 import { Led } from './led'
 import { gpios, ON, OFF } from './constants'
 import { Gpio as RealGpio } from 'onoff';
@@ -79,7 +79,7 @@ function sendAPILaserUpdate(statusStr: string) {
   }).then((response) => response.json())
 }
 
-function startLaser() {
+export function startLaser() {
   if (!chiller.readSync()) {
     return Promise.reject('Chiller is not running')
   }
@@ -101,7 +101,7 @@ function startLaser() {
   return laser.write(ON)
 }
 
-function shutdownLaser() {
+export function shutdownLaser() {
   debugLib('Laser shutdown')
   sendAPILaserUpdate('off')
     .then(function () {
@@ -115,13 +115,13 @@ function shutdownLaser() {
   return laser.write(OFF)
 }
 
-function startBlower() {
+export function startBlower() {
   debugLib('Blower started')
   emitter.emit('laser', { id: 'blowerStarted', name: 'Blower Started' })
   return blower.write(ON)
 }
 
-function shutdownBlower() {
+export function shutdownBlower() {
   if (laser.readSync() === ON) {
     return Promise.reject('Laser is running, will not shutdown blower')
   }
@@ -130,7 +130,7 @@ function shutdownBlower() {
   return blower.write(OFF)
 }
 
-function startChiller() {
+export function startChiller() {
   debugLib('Chiller started')
   emitter.emit('laser', {
     id: 'chillerStarted',
@@ -139,7 +139,7 @@ function startChiller() {
   return chiller.write(ON)
 }
 
-function shutdownChiller() {
+export function shutdownChiller() {
   if (laser.readSync() === ON) {
     return Promise.reject('Laser is running, will not shutdown chiller')
   }
@@ -152,7 +152,7 @@ function shutdownChiller() {
   return chiller.write(OFF)
 }
 
-function mainSwitchOn() {
+export function mainSwitchOn() {
   return mainSwitch.readSync() === ON
 }
 
