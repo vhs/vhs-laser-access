@@ -3,7 +3,7 @@ import path from 'path'
 import debugLib from 'debug'
 import express, { Request, Response, NextFunction, Application, RequestHandler, Router } from 'express'
 import { LaserController } from './controllers/LaserController'
-import { init as initSocket } from './socket'
+import { socketManager } from './socket'
 
 const debug = debugLib('laser:web')
 
@@ -16,7 +16,7 @@ export class LaserWebApp {
         this.expressApp = express();
         this.server = new http.Server(this.expressApp);
         this.laserController = new LaserController();
-        initSocket(this.server);
+        socketManager.init(this.server);
     }
 
     init() {

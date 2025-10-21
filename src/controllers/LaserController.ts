@@ -1,6 +1,6 @@
 import debugLib from 'debug'
 import { manager, LaserStatusEvent } from '../hardware/LaserAccessManager'
-import * as sio from '../socket'
+import { socketManager } from '../socket'
 import { Router, Request, Response, NextFunction, Application } from 'express'
 
 const debug = debugLib('laser:web')
@@ -32,9 +32,8 @@ export class LaserController {
   }
 
   public addMiddleware(app: Application) {
-    const io = sio.getIo()
-    if (io) {
-      io.on('connection', (socket) => {
+    if (socketManager.io) {
+      socketManager.io.on('connection', (socket: any) => {
         socket.emit('status', manager.getStatus())
       })
     }
@@ -58,20 +57,17 @@ export class LaserController {
   private registerEventHandlers() {
     manager.on('laser', (event: LaserStatusEvent) => {
       debug('New event from laser ' + event.id)
-      const io = sio.getIo()
-      if (io) io.emit('laser', event)
+      if (socketManager.io) socketManager.io.emit('laser', event)
     })
 
     manager.on('access', (event: LaserStatusEvent) => {
       debug('New event from access ' + event.id)
-      const io = sio.getIo()
-      if (io) io.emit('access', event)
+      if (socketManager.io) socketManager.io.emit('access', event)
     })
 
     manager.on('status', (event: LaserStatusEvent) => {
       debug('New event from status ' + event.id)
-      const io = sio.getIo()
-      if (io) io.emit('status', event)
+      if (socketManager.io) socketManager.io.emit('status', event)
     })
   }
 }

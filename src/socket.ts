@@ -1,14 +1,11 @@
 import { Server as HttpServer } from 'http'
-import { Server as IOServer, Socket } from 'socket.io'
+import { Server as IOServer } from 'socket.io'
 
-let io: IOServer | null = null
-
-export function init(server: HttpServer) {
-  io = new IOServer(server)
+class SocketManager {
+    io: IOServer | null = null
+    init(server: HttpServer) {
+        this.io = new IOServer(server)
+    }
 }
 
-export function getIo(): IOServer | null {
-  return io
-}
-
-export default { init, getIo }
+export const socketManager = new SocketManager()
