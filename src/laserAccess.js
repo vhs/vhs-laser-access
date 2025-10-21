@@ -3,7 +3,7 @@
 
 const CryptoJS = require('crypto-js')
 const debug = require('debug')('laser:control')
-const rp = require('request-promise-native')
+const fetch = require('node-fetch')
 const config = require('../config')
 const Led = require('./led').Led
 const { gpios, ON, OFF } = require('./constants')
@@ -54,16 +54,20 @@ function sendAPILaserUpdate(status) {
   formdata.ts = '' + ts
   formdata.client = config.api.clientName
 
-  const key = ts + JSON.stringify(formdata) + config.api.clientSecret
+  const jsonData = JSON.stringify(formdata)
 
-  const hash = CryptoJS.HmacSHA256(JSON.stringify(formdata), key)
+  const key = ts + jsonData + config.api.clientSecret
+
+  const hash = CryptoJS.HmacSHA256(jsonData, key)
 
   const signedRequestUrl = config.api.baseUrl + requestURI + '?hash=' + hash
 
-  return rp.put({
-    url: signedRequestUrl,
-    json: true,
-    form: formdata
+  return fetch(signedRequestUrl, {
+    method: "PUT",
+    body: jsonData,
+	  headers: {
+      'Content-Type': 'application/json'
+    }
   })
 }
 
