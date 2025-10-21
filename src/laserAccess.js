@@ -1,7 +1,6 @@
 // @ts-nocheck
 'use strict'
 
-const Bluebird = require('bluebird')
 const CryptoJS = require('crypto-js')
 const debug = require('debug')('laser:control')
 const rp = require('request-promise')
@@ -40,11 +39,6 @@ LEDs.red.enable()
 
 module.exports.LEDs = LEDs
 
-Bluebird.promisifyAll(laser)
-Bluebird.promisifyAll(blower)
-Bluebird.promisifyAll(chiller)
-Bluebird.promisifyAll(mainSwitch)
-
 const startTimers = {}
 let laserWasStarted = false
 let chillerRunning = false
@@ -75,10 +69,10 @@ function sendAPILaserUpdate(status) {
 
 function startLaser() {
   if (!chiller.online) {
-    return Bluebird.reject('Chiller is not running')
+    return Promise.reject('Chiller is not running')
   }
   if (!blower.online) {
-    return Bluebird.reject('Blower is not running')
+    return Promise.reject('Blower is not running')
   }
 
   debug('Laser started')
@@ -92,7 +86,7 @@ function startLaser() {
     .catch(function (_err) {
       debug('error updating api - startup')
     })
-  return laser.writeAsync(ON)
+  return laser.write(ON)
 }
 
 function shutdownLaser() {
@@ -107,24 +101,24 @@ function shutdownLaser() {
   laserWasStarted = false
   emitter.emit('laser', { id: 'laserShutdown', name: 'Laser Shutdown' })
   laser.online = false
-  return laser.writeAsync(OFF)
+  return laser.write(OFF)
 }
 
 function startBlower() {
   debug('Blower started')
   emitter.emit('laser', { id: 'blowerStarted', name: 'Blower Started' })
   blower.online = true
-  return blower.writeAsync(ON)
+  return blower.write(ON)
 }
 
 function shutdownBlower() {
   if (laser.online) {
-    return Bluebird.reject('Laser is running, will not shutdown blower')
+    return Promise.reject('Laser is running, will not shutdown blower')
   }
   debug('Blower shutdown')
   emitter.emit('laser', { id: 'blowerShutdown', name: 'Blower Shutdown' })
   blower.online = false
-  return blower.writeAsync(OFF)
+  return blower.write(OFF)
 }
 
 function startChiller() {
@@ -134,12 +128,12 @@ function startChiller() {
     name: 'Chiller/Compressor Started'
   })
   chiller.online = true
-  return chiller.writeAsync(ON)
+  return chiller.write(ON)
 }
 
 function shutdownChiller() {
   if (laser.online) {
-    return Bluebird.reject('Laser is running, will not shutdown chiller')
+    return Promise.reject('Laser is running, will not shutdown chiller')
   }
   debug('Chiller shutdown')
   chillerRunning = false
@@ -148,7 +142,7 @@ function shutdownChiller() {
     name: 'Chiller/Comperssor Shutdown'
   })
   chiller.online = false
-  return chiller.writeAsync(OFF)
+  return chiller.write(OFF)
 }
 
 function mainSwitchOn() {
@@ -168,7 +162,7 @@ module.exports.startAll = function () {
   // Abort startup flag
   startTimers.abortStartup = false
 
-  return new Bluebird(function (resolve, reject) {
+  return new Promise(function (resolve, reject) {
     // Check if the system is authorized first
     if (!authorized) {
       LEDs.red.blink(150) // Blink red LED to indicate access denial
@@ -193,7 +187,7 @@ module.exports.startAll = function () {
       setStatus({ id: 'ready', name: 'Ready' })
 
       // Start both the blower and laser
-      return Bluebird.all([startBlower(), startLaser()])
+      return Promise.all([startBlower(), startLaser()])
         .then(resolve) // Resolve the promise if successful
         .catch(reject) // Reject the promise if there's an error
     }
@@ -242,7 +236,7 @@ module.exports.shutdownAll = function () {
 
   if (laserWasStarted) {
     //Shutdown after a delay
-    return new Bluebird(function (resolve, reject) {
+    return new Promise(function (resolve, reject) {
       shutdownLaser()
         .then(function () {
           return LEDs.green.blink(300)
@@ -256,7 +250,7 @@ module.exports.shutdownAll = function () {
               } else {
                 setStatus({ id: 'shutdown', name: 'Shutdown' })
                 LEDs.green.disable()
-                Bluebird.all([shutdownBlower(), shutdownChiller()])
+                Promise.all([shutdownBlower(), shutdownChiller()])
                   .then(resolve)
                   .catch(reject)
               }
@@ -270,7 +264,7 @@ module.exports.shutdownAll = function () {
     startTimers.abortStartup = true
     LEDs.green.disable()
     setStatus({ id: 'shutdown', name: 'Shutdown' })
-    return Bluebird.all([shutdownLaser(), shutdownBlower(), shutdownChiller()])
+    return Promise.all([shutdownLaser(), shutdownBlower(), shutdownChiller()])
   }
 }
 

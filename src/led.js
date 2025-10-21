@@ -1,10 +1,9 @@
 // @ts-nocheck
 'use strict'
 
-const Bluebird = require('bluebird')
+const { ON, OFF } = require('constants');
 
 function Led(gpio) {
-  Bluebird.promisifyAll(gpio)
   this.gpio = gpio
   this.on = false
   this.blinkInterval = false
@@ -16,7 +15,7 @@ Led.prototype.enable = function () {
     clearInterval(this.blinkInterval)
     this.blinkInterval = null
   }
-  return this.gpio.writeAsync(1)
+  return this.gpio.write(1)
 }
 
 Led.prototype.disable = function () {
@@ -25,12 +24,12 @@ Led.prototype.disable = function () {
     clearInterval(this.blinkInterval)
     this.blinkInterval = null
   }
-  return this.gpio.writeAsync(0)
+  return this.gpio.write(0)
 }
 
 Led.prototype.toggle = function () {
   this.on = !this.on
-  return this.gpio.writeAsync(this.on ? 1 : 0)
+  return this.gpio.write(this.on ? 1 : 0)
 }
 
 Led.prototype.blink = function (delay) {
@@ -40,7 +39,7 @@ Led.prototype.blink = function (delay) {
       Led.toggle()
     }, delay)
     this.on = true
-    return this.gpio.writeAsync(1)
+    return this.gpio.write(1)
   }
   return Promise.resolve()
 }

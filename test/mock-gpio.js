@@ -9,17 +9,29 @@ const state = {
 }
 
 function MockGpio(gpio, _mode) {
-  this.gpio = gpio
+  this.gpio = gpio;
 }
 
-MockGpio.prototype.write = function (value, callback) {
+MockGpio.prototype.write = function(value) {
+  let pin = this;
+  return new Promise(function(resolve, reject) {
+    state[pin.gpio] = value
+    pin.printStats()
+    resolve()
+  });
+}
+
+MockGpio.prototype.writeSync = function (value, callback) {
   state[this.gpio] = value
   this.printStats()
   callback()
 }
 
-MockGpio.prototype.read = function (_pin, callback) {
-  callback(null, state[this.gpio])
+MockGpio.prototype.read = function(value) {
+  let pin = this;
+  return new Promise(function(resolve, reject) {
+    resolve(state[pin.gpio])
+  });
 }
 
 MockGpio.prototype.readSync = function () {
