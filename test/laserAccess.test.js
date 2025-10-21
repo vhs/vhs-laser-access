@@ -5,9 +5,9 @@ const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const sinon = require('sinon')
 
-const laserAccess = require('../src/laserAccess')
+const laserAccess = require('../dist/laserAccess')
 const mockgpio = require('./mock-gpio')
-const { gpios, ON, OFF } = require("../src/constants");
+const { gpios, ON, OFF } = require("../dist/constants");
 
 chai.use(chaiAsPromised);
 chai.should();

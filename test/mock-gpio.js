@@ -2,7 +2,7 @@
 
 const readline = require('readline')
 const debug = require('debug')('laser:gpio')
-const { gpios, ON, OFF } = require('../src/constants')
+const { gpios, ON, OFF } = require('../dist/constants')
 
 const state = {
   watch: {}

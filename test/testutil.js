@@ -4,7 +4,7 @@
 let init
 
 const getApp = function () {
-  const mainApp = require('../src/app')
+  const mainApp = require('../dist/app')
   if (!init) {
     mainApp.addHandler('/mock500', function (_req, _res, next) {
       next('Unittest error')
