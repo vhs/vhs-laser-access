@@ -3,19 +3,23 @@ import debugLib from 'debug'
 import config from '../config.json'
 import { Led } from './led'
 import { gpios, ON, OFF } from './constants'
+import { Gpio as RealGpio } from 'onoff';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+// @ts-ignore - no type declarations for mock-gpio
+const { Gpio: MockGpio } = require('../test/mock-gpio');
 
-let Gpio: any
+let Gpio: RealGpio | typeof MockGpio;
+
 try {
-  Gpio = require('onoff').Gpio
   // try creating a GPIO to ensure availability
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const testGpio = new Gpio(gpios.GPIO_LASER, 'out')
-  // console.log('starting with real GPIOs')
+  const testGpio = new RealGpio(gpios.GPIO_LASER, 'out');
+  Gpio = RealGpio;
+  debugLib('starting with real GPIOs');
 } catch (_err) {
   // fallback to mock
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  Gpio = require('../test/mock-gpio').Gpio
-  // console.log('starting with mocked GPIOs')
+  Gpio = MockGpio;
+  debugLib("starting with mocked GPIOs");
 }
 
 import { EventEmitter } from 'events'

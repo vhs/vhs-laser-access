@@ -13,9 +13,3 @@ export const ON = 1
 export const OFF = 0
 
 export type Gpios = typeof gpios
-
-export default {
-  gpios,
-  ON,
-  OFF
-}

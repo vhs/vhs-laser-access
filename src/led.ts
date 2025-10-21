@@ -17,7 +17,7 @@ export class Led {
       clearInterval(this.blinkInterval)
       this.blinkInterval = null
     }
-    return this.gpio.write(1)
+    return this.gpio.write(ON)
   }
 
   disable(): Promise<any> {
@@ -26,12 +26,12 @@ export class Led {
       clearInterval(this.blinkInterval)
       this.blinkInterval = null
     }
-    return this.gpio.write(0)
+    return this.gpio.write(OFF)
   }
 
   toggle(): Promise<any> {
     this.on = !this.on
-    return this.gpio.write(this.on ? 1 : 0)
+    return this.gpio.write(this.on ? ON : OFF)
   }
 
   blink(delay: number): Promise<any> {
@@ -40,7 +40,7 @@ export class Led {
         this.toggle()
       }, delay) as unknown as NodeJS.Timeout
       this.on = true
-      return this.gpio.write(1)
+      return this.gpio.write(ON)
     }
     return Promise.resolve()
   }
