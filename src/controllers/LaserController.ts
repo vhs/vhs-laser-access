@@ -1,5 +1,5 @@
 import debugLib from 'debug'
-import { grantAccess, getStatus, on as onLaser, LaserStatusEvent } from '../laserAccess'
+import { manager, LaserStatusEvent } from '../laserAccess'
 import * as sio from '../socket'
 import { Router, Request, Response, NextFunction, Application } from 'express'
 
@@ -20,14 +20,14 @@ export class LaserController {
     })
 
     this.router.all('/api/activate', (_req: Request, res: Response, next: NextFunction) => {
-      grantAccess()
+      manager.grantAccess()
       res.locals.result = res.locals.result || {}
       res.locals.result.ok = true
     })
   }
 
   private laserStatus(_req: Request, res: Response, next: NextFunction) {
-    res.locals.status = getStatus()
+    res.locals.status = manager.getStatus()
     next()
   }
 
@@ -35,7 +35,7 @@ export class LaserController {
     const io = sio.getIo()
     if (io) {
       io.on('connection', (socket) => {
-        socket.emit('status', getStatus())
+        socket.emit('status', manager.getStatus())
       })
     }
   }
@@ -56,19 +56,19 @@ export class LaserController {
   }
 
   private registerEventHandlers() {
-    onLaser('laser', (event: LaserStatusEvent) => {
+    manager.on('laser', (event: LaserStatusEvent) => {
       debug('New event from laser ' + event.id)
       const io = sio.getIo()
       if (io) io.emit('laser', event)
     })
 
-    onLaser('access', (event: LaserStatusEvent) => {
+    manager.on('access', (event: LaserStatusEvent) => {
       debug('New event from access ' + event.id)
       const io = sio.getIo()
       if (io) io.emit('access', event)
     })
 
-    onLaser('status', (event: LaserStatusEvent) => {
+    manager.on('status', (event: LaserStatusEvent) => {
       debug('New event from status ' + event.id)
       const io = sio.getIo()
       if (io) io.emit('status', event)
