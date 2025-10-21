@@ -11,10 +11,11 @@ const gpios = {
   GPIO_MAIN_SWITCH: 4
 }
 
-module.exports.gpios = gpios
-
 const ON = 1
 const OFF = 0
 
-module.exports.ON = ON
-module.exports.OFF = OFF
+module.exports = {
+  gpios,
+  ON,
+  OFF
+}

@@ -2,12 +2,10 @@
 'use strict'
 
 const debug = require('debug')('laser:web')
-const express = require('express')
-
 const laser = require('../laserAccess')
 const sio = require('../socket')
 
-const router = express.Router()
+const router = require('express').Router()
 
 function laserStatus(_req, res, next) {
   res.locals.status = laser.status
@@ -25,8 +23,6 @@ router.all('/api/activate', function (_req, res, next) {
   next()
 })
 
-module.exports.router = router
-
 function apiErrorHandler (app, path) {
   app.use(path, function (err, _req, res, _next) {
     // jshint ignore:line
@@ -43,13 +39,13 @@ function apiErrorHandler (app, path) {
   })
 }
 
-module.exports.addMiddleware = function (app) {
+const addMiddleware = function (app) {
   sio.io.on('connection', function (socket) {
     socket.emit('status', laser.getStatus())
   })
 }
 
-module.exports.addErrorHandlers = function (app) {
+const addErrorHandlers = function (app) {
   apiErrorHandler(app, '/api')
 }
 
@@ -67,3 +63,9 @@ laser.on('status', function (event) {
   debug('New event from status ' + event.id)
   sio.io.emit('status', event)
 })
+
+module.exports = {
+  router,
+  addErrorHandlers,
+  addMiddleware
+}

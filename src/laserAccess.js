@@ -317,3 +317,4 @@ module.exports.shutdownBlower = shutdownBlower
 module.exports.shutdownChiller = shutdownChiller
 
 module.exports.getStatus = getStatus
+

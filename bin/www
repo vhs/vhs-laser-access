@@ -5,7 +5,7 @@ const debug = require('debug')('laser:web')
 
 const app = require('../src/app')
 
-app.app()
+app.startApp()
 
 const server = app.server
 

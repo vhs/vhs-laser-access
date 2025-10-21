@@ -19,11 +19,11 @@ let init = false
 app.set('views', path.join(__dirname, '..', 'views'))
 app.set('view engine', 'jade')
 
-module.exports.addHandler = function (path, handler) {
+const addHandler = function (path, handler) {
   app.use(path, handler)
 }
 
-module.exports.app = function () {
+const startApp = function () {
   if (!init) {
     routes.addMiddleware(app)
     
@@ -55,4 +55,8 @@ module.exports.app = function () {
   return app
 }
 
-module.exports.server = server
+module.exports = {
+  addHandler,
+  server,
+  startApp
+}

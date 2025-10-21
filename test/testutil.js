@@ -3,7 +3,7 @@
 
 let init
 
-module.exports.getApp = function () {
+const getApp = function () {
   const mainApp = require('../src/app')
   if (!init) {
     mainApp.addHandler('/mock500', function (_req, _res, next) {
@@ -14,10 +14,9 @@ module.exports.getApp = function () {
     })
     init = true
   }
-  return mainApp.app()
+  return mainApp.startApp()
 }
 
-module.exports.restoreSlackStub = function () {
-  const agent = require('superagent-promise')
-  agent.get.restore()
+module.exports = {
+  getApp
 }
