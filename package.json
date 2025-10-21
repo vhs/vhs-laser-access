@@ -6,7 +6,8 @@
     "prepare": "wireit",
     "start": "wireit",
     "watch": "wireit",
-    "test": "wireit"
+    "test": "wireit",
+    "lint": "wireit"
   },
   "dependencies": {
     "bluebird": "^2.9.14",
@@ -27,20 +28,21 @@
   },
   "devDependencies": {
     "bower": "^1.8.14",
-    "chai": "^2.1.1",
-    "chai-as-promised": "^4.3.0",
+    "chai": "^4.5.0",
+    "chai-as-promised": "^7.1.2",
     "jshint": "^2.13.6",
     "jshint-stylish": "^2.2.1",
     "mocha": "^11.7.4",
     "nyc": "^17.1.0",
     "sinon": "^21.0.0",
     "supertest": "^7.0.0",
-    "supertest-as-promised": "^1.0.0",
     "wireit": "^0.14.9"
   },
   "jshintConfig": {
     "node": true,
+    "esversion": "6",
     "globalstrict": true,
+    "asi": true,
     "globals": {
       "describe": false,
       "it": false,
@@ -58,6 +60,9 @@
   "wireit": {
     "test": {
       "command": "NODE_ENV=test nyc yarn run mocha --reporter nyan test/*.test.js"
+    },
+    "lint": {
+      "command": "yarn run jshint --reporter=node_modules/jshint-stylish src"
     },
     "watch": {
       "command": "node_modules/.bin/supervisor bin/www",

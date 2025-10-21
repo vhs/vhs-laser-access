@@ -1,6 +1,14 @@
 // @ts-nocheck
 'use strict'
 
+const Bluebird = require('bluebird')
+const CryptoJS = require('crypto-js')
+const debug = require('debug')('laser:control')
+const rp = require('request-promise')
+const config = require('../config')
+const Led = require('./led').Led
+const { gpios, ON, OFF } = require('./constants')
+
 let Gpio
 
 try {
@@ -14,14 +22,6 @@ try {
 }
 
 const EventEmitter = require('events').EventEmitter
-
-const Bluebird = require('bluebird')
-const CryptoJS = require('crypto-js')
-const debug = require('debug')('laser:control')
-const rp = require('request-promise')
-const config = require('../config')
-const Led = require('./led').Led
-const { gpios, ON, OFF } = require('./constants')
 
 const { maintenanceStatus } = require('./mqtt')
 

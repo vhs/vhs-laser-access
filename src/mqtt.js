@@ -1,3 +1,5 @@
+'use strict'
+
 const debug = require('debug')('laser:mqtt')
 const mqtt = require('mqtt')
 

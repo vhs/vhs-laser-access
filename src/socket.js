@@ -1,4 +1,6 @@
 // @ts-nocheck
+'use strict'
+
 const io = require('socket.io')
 
 module.exports.io = null

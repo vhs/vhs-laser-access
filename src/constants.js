@@ -1,3 +1,5 @@
+'use strict'
+
 const gpios = {
   GPIO_LASER: 22,
   GPIO_BLOWER: 27,
