@@ -262,8 +262,8 @@ describe('Status LED tests', function () {
   let clock
 
   before(function () {
-    state[gpios.GPIO_LED_GREEN] = 0
-    state[gpios.GPIO_LED_RED] = 0
+    state[gpios.GPIO_LED_GREEN] = OFF
+    state[gpios.GPIO_LED_RED] = OFF
     clock = sinon.useFakeTimers()
   })
 
