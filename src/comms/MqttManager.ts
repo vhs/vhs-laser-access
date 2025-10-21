@@ -9,11 +9,11 @@ export class MqttManager {
     public maintenanceStatus: string = 'ok'
 
     constructor() {
-        const mqttServer = config.mqttServer || "mqtt://127.0.0.1"
-        const mqttTopic = config.mqttTopic || 'laser/maintenance'
+        const mqttServer = config.mqtt.server || "mqtt://127.0.0.1"
+        const mqttTopic = config.mqtt.topic || 'laser/maintenance'
 
         if (process.env.NODE_ENV !== 'test') {
-            const mqttClient = mqtt.connect(mqttServer, config.mqttOptions)
+            const mqttClient = mqtt.connect(mqttServer, config.mqtt.options)
 
             mqttClient.on('connect', () => {
                 debug('Connected to MQTT broker')

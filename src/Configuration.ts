@@ -2,9 +2,11 @@
 // this is the type definition for it, with example values in comments
 
 export interface Configuration {
-    mqttServer: string // "mqtt://127.0.0.1"
-    mqttOptions: any // null
-    mqttTopic: string // "laser/maintenance"
+    mqtt: {
+        server: string // "mqtt://127.0.0.1"
+        options: any // null
+        topic: string // "laser/maintenance"
+    },
     api: {
         baseUrl: string // "https://api.vanhack.ca"
         clientName: string // "<clientName>"
