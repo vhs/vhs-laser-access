@@ -30,13 +30,14 @@ Install node.js, one way is with this arm package
     wget http://node-arm.herokuapp.com/node_latest_armhf.deb
     sudo dpkg -i node_latest_armhf.deb
 
-After node.js is installed from the root of the project run:
 
-    npm install
+After node.js is installed, from the project root run:
 
-When installing on the production device you don't need to install the dev dependencies.
+    yarn install
 
-    npm install --production
+When installing on the production device you don't need to install the dev dependencies:
+
+    NODE_ENV=production yarn install --production
 
 Installing on a RPi does take a while.
 
@@ -63,12 +64,19 @@ Will check for ok status over MQTT before allowing the laser switch to be unlock
 
 If dev dependencies are installed you can run all test cases with
 
-    npm test
+    yarn test
 
 ## Running
 
+
 To set the port set the environment variable PORT to whatever port you want to listen to, by default it's 3000
 
-    npm start
+First build the TypeScript sources (produces `dist/`):
+
+    yarn build
+
+Then start the compiled server:
+
+    yarn start
 
 To enable debug logging then set the environment variable DEBUG to laser:\* to log all laser related events.

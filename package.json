@@ -2,12 +2,14 @@
   "name": "laser-access",
   "version": "0.1.0",
   "description": "VHS Laser Access",
+  "packageManager": "yarn@1.22.22",
   "scripts": {
     "prepare": "wireit",
     "start": "wireit",
     "watch": "wireit",
     "test": "wireit",
-    "lint": "wireit"
+    "lint": "wireit",
+    "build": "wireit"
   },
   "dependencies": {
     "crypto-js": "^4.2.0",
@@ -24,6 +26,15 @@
   },
   "devDependencies": {
     "bower": "^1.8.14",
+    "@types/chai": "^4.3.4",
+    "@types/express": "^4.17.17",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.5.6",
+  "@types/debug": "^4.1.8",
+  "@types/crypto-js": "^4.1.0",
+    "@types/socket.io": "^3.0.2",
+    "@types/supertest": "^6.0.0",
+    "typescript": "^5.6.2",
     "chai": "^4.5.0",
     "chai-as-promised": "^7.1.2",
     "jshint": "^2.13.6",
@@ -52,21 +63,25 @@
   "license": "ISC",
   "wireit": {
     "test": {
-      "command": "NODE_ENV=test nyc yarn run mocha --reporter nyan test/*.test.js"
+      "command": "NODE_ENV=test ./node_modules/.bin/nyc ./node_modules/.bin/mocha --reporter nyan test/*.test.js"
     },
     "lint": {
-      "command": "yarn run jshint --reporter=node_modules/jshint-stylish src"
+      "command": "./node_modules/.bin/jshint --reporter=node_modules/jshint-stylish src"
     },
     "watch": {
-      "command": "node_modules/.bin/supervisor bin/www",
+      "command": "node_modules/.bin/supervisor dist/bin/www.js",
       "service": true
     },
     "start": {
-      "command": "node_modules/.bin/supervisor -w src/app.js bin/www",
+      "command": "node_modules/.bin/supervisor dist/bin/www.js",
       "service": true
+    },
+    "build": {
+      "command": "tsc -p tsconfig.json"
     },
     "prepare": {
       "dependencies": [
+        "build",
         "bower:install"
       ]
     },
