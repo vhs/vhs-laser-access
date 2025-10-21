@@ -63,17 +63,17 @@
   "license": "ISC",
   "wireit": {
     "test": {
-      "command": "NODE_ENV=test ./node_modules/.bin/nyc ./node_modules/.bin/mocha --reporter nyan test/*.test.js"
+      "command": "NODE_ENV=test nyc mocha --reporter nyan test/*.test.js"
     },
     "lint": {
-      "command": "./node_modules/.bin/jshint --reporter=node_modules/jshint-stylish src"
+      "command": "jshint --reporter=node_modules/jshint-stylish src"
     },
     "watch": {
-      "command": "node_modules/.bin/supervisor dist/bin/www.js",
+      "command": "supervisor dist/bin/www.js",
       "service": true
     },
     "start": {
-      "command": "node_modules/.bin/supervisor dist/bin/www.js",
+      "command": "supervisor dist/bin/www.js",
       "service": true
     },
     "build": {
