@@ -1,11 +1,9 @@
 import debugLib from 'debug'
-import { grantAccess, getStatus, on as onLaser } from '../laserAccess'
+import { grantAccess, getStatus, on as onLaser, LaserStatusEvent } from '../laserAccess'
 import * as sio from '../socket'
-import express, { Router, Request, Response, NextFunction, Application } from 'express'
+import { Router, Request, Response, NextFunction, Application } from 'express'
 
 const debug = debugLib('laser:web')
-
-type LaserEvent = { id: string; name?: string; [key: string]: any }
 
 export class LaserController {
   public router: Router
@@ -58,19 +56,19 @@ export class LaserController {
   }
 
   private registerEventHandlers() {
-    onLaser('laser', (event: LaserEvent) => {
+    onLaser('laser', (event: LaserStatusEvent) => {
       debug('New event from laser ' + event.id)
       const io = sio.getIo()
       if (io) io.emit('laser', event)
     })
 
-    onLaser('access', (event: LaserEvent) => {
+    onLaser('access', (event: LaserStatusEvent) => {
       debug('New event from access ' + event.id)
       const io = sio.getIo()
       if (io) io.emit('access', event)
     })
 
-    onLaser('status', (event: LaserEvent) => {
+    onLaser('status', (event: LaserStatusEvent) => {
       debug('New event from status ' + event.id)
       const io = sio.getIo()
       if (io) io.emit('status', event)

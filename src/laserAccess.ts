@@ -41,12 +41,15 @@ pins.LEDs.red.enable()
 
 export const LEDs = pins.LEDs;
 
-export const Status = {
-  shutdown: { id: 'shutdown', name: 'Shutdown' },
-  ready: { id: 'ready', name: 'Ready' },
-  starting: { id: 'starting', name: 'Starting' },
-  shuttingDown: { id: 'shuttingDown', name: 'Shutting Down' }
+export interface LaserStatusEvent {
+    id: "shutdown" | "ready" | "starting" | "shuttingDown",
+    name: string
 }
+
+const StatusShutdown: LaserStatusEvent = { id: 'shutdown', name: 'Shutdown' }
+const StatusReady: LaserStatusEvent = { id: 'ready', name: 'Ready' }
+const StatusStarting: LaserStatusEvent = { id: 'starting', name: 'Starting' }
+const StatusShuttingDown: LaserStatusEvent = { id: 'shuttingDown', name: 'Shutting Down' }
 
 const startTimers: any = {}
 
@@ -54,7 +57,7 @@ let state = {
     laserWasStarted: false,
     chillerRunning: false,
     authorized: false,
-    status: Status.shutdown
+    status: StatusShutdown
 }
 
 function sendAPILaserUpdate(statusStr: string) {
@@ -192,7 +195,7 @@ export function startAll(): Promise<any> {
 
     const startLaserAndBlower = function () {
       pins.LEDs.green.enable()
-      setStatus(Status.ready)
+      setStatus(StatusReady)
       return Promise.all([startBlower(), startLaser()])
         .then(resolve)
         .catch(reject)
@@ -208,7 +211,7 @@ export function startAll(): Promise<any> {
     }
 
     pins.LEDs.green.blink(300)
-    setStatus(Status.starting)
+    setStatus(StatusStarting)
 
     startChiller().then(function () {
       startTimers.startup = null
@@ -229,7 +232,7 @@ export function shutdownAll(): Promise<any> | void {
     return
   }
   startTimers.abortShutdown = false
-  setStatus(Status.shuttingDown)
+  setStatus(StatusShuttingDown)
 
   if (state.laserWasStarted) {
     return new Promise(function (resolve, reject) {
@@ -243,7 +246,7 @@ export function shutdownAll(): Promise<any> | void {
             if (startTimers.abortShutdown) {
               resolve('Shutdown aborted')
             } else {
-              setStatus(Status.shutdown)
+              setStatus(StatusShutdown)
               pins.LEDs.green.disable()
               Promise.all([shutdownBlower(), shutdownChiller()])
                 .then(resolve)
@@ -255,7 +258,7 @@ export function shutdownAll(): Promise<any> | void {
   } else {
     startTimers.abortStartup = true
     pins.LEDs.green.disable()
-    setStatus(Status.shutdown)
+    setStatus(StatusShutdown)
     return Promise.all([shutdownLaser(), shutdownBlower(), shutdownChiller()])
   }
 }
