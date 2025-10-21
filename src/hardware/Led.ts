@@ -38,7 +38,7 @@ export class Led {
     if (!this.blinkInterval) {
       this.blinkInterval = setInterval(() => {
         this.toggle()
-      }, delay) as unknown as NodeJS.Timeout
+      }, delay)
       this.on = true
       return this.gpio.write(ON)
     }

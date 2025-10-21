@@ -9,7 +9,8 @@ export interface Configuration {
         baseUrl: string // "https://api.vanhack.ca"
         clientName: string // "<clientName>"
         clientSecret: string // "<clientSecret>"
-    }
+    },
+    port: number
 }
 
 export const config: Configuration = require('../config.json');

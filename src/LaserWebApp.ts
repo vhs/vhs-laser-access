@@ -26,7 +26,7 @@ export class LaserWebApp {
         this.expressApp.use(express.static(path.join(__dirname, '..', 'public')))
 
         // setup socket.io middleware
-        this.laserController.addMiddleware(this.expressApp)
+        this.laserController.setupStatusSocket(this.expressApp)
 
         // mount the laser controller routes at '/'
         this.expressApp.use('/', this.laserController.router)

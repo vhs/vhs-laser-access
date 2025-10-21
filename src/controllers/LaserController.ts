@@ -15,8 +15,11 @@ export class LaserController {
   }
 
   private registerRoutes() {
-    this.router.get('/', this.laserStatus.bind(this), (_req: Request, res: Response) => {
-      res.render('index', { title: 'VHS' })
+    this.router.get('/', (_req: Request, res: Response) => {
+      res.render('index', {
+        title: 'VHS',
+        status: manager.getStatus()
+      });
     })
 
     this.router.all('/api/activate', (_req: Request, res: Response, next: NextFunction) => {
@@ -26,12 +29,7 @@ export class LaserController {
     })
   }
 
-  private laserStatus(_req: Request, res: Response, next: NextFunction) {
-    res.locals.status = manager.getStatus()
-    next()
-  }
-
-  public addMiddleware(app: Application) {
+  public setupStatusSocket(app: Application) {
     if (socketManager.io) {
       socketManager.io.on('connection', (socket: any) => {
         socket.emit('status', manager.getStatus())
