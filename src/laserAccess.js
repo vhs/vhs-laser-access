@@ -21,21 +21,9 @@ const debug = require('debug')('laser:control')
 const rp = require('request-promise')
 const config = require('../config')
 const Led = require('./led').Led
+const { gpios, ON, OFF } = require('./constants')
 
 const { maintenanceStatus } = require('./mqtt')
-
-const gpios = {
-  GPIO_LASER: 22,
-  GPIO_BLOWER: 27,
-  GPIO_CHILLER: 17,
-
-  GPIO_LED_GREEN: 23,
-  GPIO_LED_RED: 24,
-
-  GPIO_MAIN_SWITCH: 4
-}
-
-module.exports.gpios = gpios
 
 const laser = new Gpio(gpios.GPIO_LASER, 'out')
 const blower = new Gpio(gpios.GPIO_BLOWER, 'out')
@@ -104,7 +92,7 @@ function startLaser() {
     .catch(function (_err) {
       debug('error updating api - startup')
     })
-  return laser.writeAsync(1)
+  return laser.writeAsync(ON)
 }
 
 function shutdownLaser() {
@@ -119,14 +107,14 @@ function shutdownLaser() {
   laserWasStarted = false
   emitter.emit('laser', { id: 'laserShutdown', name: 'Laser Shutdown' })
   laser.online = false
-  return laser.writeAsync(0)
+  return laser.writeAsync(OFF)
 }
 
 function startBlower() {
   debug('Blower started')
   emitter.emit('laser', { id: 'blowerStarted', name: 'Blower Started' })
   blower.online = true
-  return blower.writeAsync(1)
+  return blower.writeAsync(ON)
 }
 
 function shutdownBlower() {
@@ -136,7 +124,7 @@ function shutdownBlower() {
   debug('Blower shutdown')
   emitter.emit('laser', { id: 'blowerShutdown', name: 'Blower Shutdown' })
   blower.online = false
-  return blower.writeAsync(0)
+  return blower.writeAsync(OFF)
 }
 
 function startChiller() {
@@ -146,7 +134,7 @@ function startChiller() {
     name: 'Chiller/Compressor Started'
   })
   chiller.online = true
-  return chiller.writeAsync(1)
+  return chiller.writeAsync(ON)
 }
 
 function shutdownChiller() {
@@ -160,11 +148,11 @@ function shutdownChiller() {
     name: 'Chiller/Comperssor Shutdown'
   })
   chiller.online = false
-  return chiller.writeAsync(0)
+  return chiller.writeAsync(OFF)
 }
 
 function mainSwitchOn() {
-  return mainSwitch.readSync() === 1
+  return mainSwitch.readSync() === ON
 }
 
 function setStatus(s) {

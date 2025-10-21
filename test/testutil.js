@@ -1,9 +1,6 @@
 // @ts-nocheck
 'use strict'
 
-const Bluebird = require('bluebird')
-const sinon = require('sinon')
-
 let init
 
 module.exports.getApp = function () {

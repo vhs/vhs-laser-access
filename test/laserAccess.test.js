@@ -6,13 +6,8 @@ const chaiAsPromised = require('chai-as-promised')
 const sinon = require('sinon')
 
 const laserAccess = require('../src/laserAccess')
-
 const mockgpio = require('./mock-gpio')
-
-let gpios = laserAccess.gpios
-
-const ON = 1
-const OFF = 0
+const { gpios, ON, OFF } = require("../src/constants");
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -22,10 +17,9 @@ describe('Laser startup and shutdown', function () {
   let clock
 
   before(function () {
-    gpios = laserAccess.gpios
-    state[gpios.GPIO_BLOWER] = 0
-    state[gpios.GPIO_CHILLER] = 0
-    state[gpios.GPIO_LASER] = 0
+    state[gpios.GPIO_BLOWER] = OFF
+    state[gpios.GPIO_CHILLER] = OFF
+    state[gpios.GPIO_LASER] = OFF
     clock = sinon.useFakeTimers()
   })
 
@@ -70,9 +64,9 @@ describe('Laser startup and shutdown', function () {
   })
 
   it('resets the state', function () {
-    state[gpios.GPIO_BLOWER] = 0
-    state[gpios.GPIO_CHILLER] = 0
-    state[gpios.GPIO_LASER] = 0
+    state[gpios.GPIO_BLOWER] = OFF
+    state[gpios.GPIO_CHILLER] = OFF
+    state[gpios.GPIO_LASER] = OFF
   })
 
   it('turns on the main switch but access has not been granted yet', function () {

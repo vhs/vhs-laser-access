@@ -42,7 +42,7 @@ Led.prototype.blink = function (delay) {
     this.on = true
     return this.gpio.writeAsync(1)
   }
-  return Bluebird.resolve()
+  return Promise.resolve()
 }
 
 module.exports.Led = Led
