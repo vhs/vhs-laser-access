@@ -17,7 +17,7 @@ let init = false
 
 // view engine setup
 app.set('views', path.join(__dirname, '..', 'views'))
-app.set('view engine', 'jade')
+app.set('view engine', 'pug')
 
 const addHandler = function (path, handler) {
   app.use(path, handler)

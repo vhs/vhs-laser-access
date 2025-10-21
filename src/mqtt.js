@@ -31,8 +31,7 @@ if (process.env.NODE_ENV !== 'test') {
 
   mqttClient.on('message', (topic, message) => {
     if (topic === mqttTopic) {
-      maintenanceStatus = message.toString() // Read the message and store it
-
+      maintenanceStatus = message.toString()
       debug(`Received message on ${mqttTopic}: ${maintenanceStatus}`)
     }
   })
