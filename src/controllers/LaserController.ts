@@ -1,5 +1,5 @@
 import debugLib from 'debug'
-import { manager, LaserStatusEvent } from '../LaserAccessManager'
+import { manager, LaserStatusEvent } from '../hardware/LaserAccessManager'
 import * as sio from '../socket'
 import { Router, Request, Response, NextFunction, Application } from 'express'
 

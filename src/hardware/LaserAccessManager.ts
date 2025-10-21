@@ -1,13 +1,13 @@
 import CryptoJS from 'crypto-js'
 import debugLib from 'debug'
-import { config } from './Configuration'
+import { config } from '../Configuration'
 import { Led } from './Led'
 import { gpios, ON, OFF } from './GpiosConstants'
 import { Gpio as RealGpio } from 'onoff';
 import { Gpio as MockGpio } from './MockGpio';
 
 import { EventEmitter } from 'events'
-import { maintenanceStatus } from './mqtt'
+import { maintenanceStatus } from '../mqtt'
 
 let Gpio: typeof RealGpio | typeof MockGpio
 
