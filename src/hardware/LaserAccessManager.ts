@@ -7,7 +7,7 @@ import { Gpio as RealGpio } from 'onoff';
 import { Gpio as MockGpio } from './MockGpio';
 
 import { EventEmitter } from 'events'
-import { maintenanceStatus } from '../mqtt'
+import { mqttManager } from '../MqttManager'
 
 let Gpio: typeof RealGpio | typeof MockGpio
 
@@ -217,7 +217,7 @@ class LaserAccessManager {
         return reject('Access Denied')
       }
 
-      if (maintenanceStatus !== 'ok') {
+      if (mqttManager.maintenanceStatus !== 'ok') {
         this.pins.LEDs.red.blink(150)
         setTimeout(() => {
           this.pins.LEDs.red.enable()
