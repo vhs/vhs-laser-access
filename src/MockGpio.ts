@@ -1,6 +1,6 @@
 import readline from 'readline'
 import debugLib from 'debug'
-import { gpios, ON, OFF } from './constants'
+import { gpios, ON, OFF } from './GpiosConstants'
 
 const debug = debugLib('laser:gpio')
 

@@ -1,10 +1,10 @@
 import CryptoJS from 'crypto-js'
 import debugLib from 'debug'
-import { config } from './config'
-import { Led } from './led'
-import { gpios, ON, OFF } from './constants'
+import { config } from './Configuration'
+import { Led } from './Led'
+import { gpios, ON, OFF } from './GpiosConstants'
 import { Gpio as RealGpio } from 'onoff';
-import { Gpio as MockGpio } from './mock-gpio';
+import { Gpio as MockGpio } from './MockGpio';
 
 import { EventEmitter } from 'events'
 import { maintenanceStatus } from './mqtt'
@@ -34,7 +34,7 @@ const StatusReady: LaserStatusEvent = { id: 'ready', name: 'Ready' }
 const StatusStarting: LaserStatusEvent = { id: 'starting', name: 'Starting' }
 const StatusShuttingDown: LaserStatusEvent = { id: 'shuttingDown', name: 'Shutting Down' }
 
-class LaserManager {
+class LaserAccessManager {
   private pins: {
     laser: any
     blower: any
@@ -312,6 +312,6 @@ class LaserManager {
   }
 }
 
-export const manager = new LaserManager()
+export const manager = new LaserAccessManager()
 
 export const LEDs = manager.LEDs

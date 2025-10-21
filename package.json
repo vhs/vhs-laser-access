@@ -72,14 +72,14 @@
       "command": "jshint --reporter=node_modules/jshint-stylish src"
     },
     "watch": {
-      "command": "supervisor dist/bin/www.js",
+      "command": "supervisor dist/main.js",
       "service": true,
       "dependencies": [
         "build"
       ]
     },
     "start": {
-      "command": "supervisor dist/bin/www.js",
+      "command": "supervisor dist/main.js",
       "service": true,
       "dependencies": [
         "build"

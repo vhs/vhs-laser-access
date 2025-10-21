@@ -1,4 +1,4 @@
-import { ON, OFF } from './constants'
+import { ON, OFF } from './GpiosConstants'
 
 export class Led {
   gpio: any

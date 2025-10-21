@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 import debugLib from 'debug'
-import { LaserAccessApp } from '../app'
+import { LaserWebApp } from './LaserWebApp'
 
 const debug = debugLib('laser:web')
 
-const app = new LaserAccessApp()
+const app = new LaserWebApp()
 
 app.init();
 

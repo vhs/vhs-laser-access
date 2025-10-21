@@ -7,7 +7,7 @@ import { init as initSocket } from './socket'
 
 const debug = debugLib('laser:web')
 
-export class LaserAccessApp {
+export class LaserWebApp {
     expressApp: Application;
     server: http.Server;
     laserController: LaserController;
