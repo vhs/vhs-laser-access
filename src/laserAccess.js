@@ -38,11 +38,18 @@ LEDs.red.enable()
 
 module.exports.LEDs = LEDs
 
+const Status = {
+  shutdown: { id: 'shutdown', name: 'Shutdown' },
+  ready: { id: 'ready', name: 'Ready' },
+  starting: { id: 'starting', name: 'Starting' },
+  shuttingDown: { id: 'shuttingDown', name: 'Shutting Down' }
+}
+
 const startTimers = {}
 let laserWasStarted = false
 let chillerRunning = false
 let authorized = false
-let status = { id: 'shutdown', name: 'Shutdown' }
+let status = Status.shutdown
 
 function sendAPILaserUpdate(status) {
   const ts = Math.floor(Date.now() / 1000)
@@ -188,7 +195,7 @@ module.exports.startAll = function () {
     // Function to start the laser and blower components
     const startLaserAndBlower = function () {
       LEDs.green.enable() // Turn on the green LED to indicate readiness
-      setStatus({ id: 'ready', name: 'Ready' })
+      setStatus(Status.ready)
 
       // Start both the blower and laser
       return Promise.all([startBlower(), startLaser()])
@@ -211,7 +218,7 @@ module.exports.startAll = function () {
 
     // If the chiller is not running, start it first
     LEDs.green.blink(300) // Blink green LED to indicate starting
-    setStatus({ id: 'starting', name: 'Starting' })
+    setStatus(Status.starting)
 
     // Start the chiller and proceed with laser and blower startup
     startChiller().then(function () {
@@ -236,7 +243,7 @@ module.exports.shutdownAll = function () {
     return
   }
   startTimers.abortShutdown = false
-  setStatus({ id: 'shuttingDown', name: 'Shutting Down' })
+  setStatus(Status.shuttingDown)
 
   if (laserWasStarted) {
     //Shutdown after a delay
@@ -252,7 +259,7 @@ module.exports.shutdownAll = function () {
               if (startTimers.abortShutdown) {
                 resolve('Shutdown aborted')
               } else {
-                setStatus({ id: 'shutdown', name: 'Shutdown' })
+                setStatus(Status.shutdown)
                 LEDs.green.disable()
                 Promise.all([shutdownBlower(), shutdownChiller()])
                   .then(resolve)
@@ -267,7 +274,7 @@ module.exports.shutdownAll = function () {
     //Shutdown right away, cancel any timers
     startTimers.abortStartup = true
     LEDs.green.disable()
-    setStatus({ id: 'shutdown', name: 'Shutdown' })
+    setStatus(Status.shutdown)
     return Promise.all([shutdownLaser(), shutdownBlower(), shutdownChiller()])
   }
 }
