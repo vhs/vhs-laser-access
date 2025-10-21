@@ -1,72 +1,79 @@
 import debugLib from 'debug'
 import { grantAccess, getStatus, on as onLaser } from '../laserAccess'
 import * as sio from '../socket'
-import { Router, Request, Response, NextFunction } from 'express'
+import express, { Router, Request, Response, NextFunction, Application } from 'express'
 
 const debug = debugLib('laser:web')
 
-export const router = Router()
+type LaserEvent = { id: string; name?: string; [key: string]: any }
 
-function laserStatus(_req: Request, res: Response, next: NextFunction) {
-  res.locals.status = getStatus()
-  next()
-}
+export class LaserController {
+  public router: Router
 
-router.get('/', laserStatus, function (_req: Request, res: Response, _next: NextFunction) {
-  res.render('index', { title: 'VHS' })
-})
+  constructor() {
+    this.router = Router()
+    this.registerRoutes()
+    this.registerEventHandlers()
+  }
 
-router.all('/api/activate', function (_req: Request, res: Response, next: NextFunction) {
-  grantAccess()
-  res.locals.result = res.locals.result || {}
-  res.locals.result.ok = true
-  next()
-})
+  private registerRoutes() {
+    this.router.get('/', this.laserStatus.bind(this), (_req: Request, res: Response) => {
+      res.render('index', { title: 'VHS' })
+    })
 
-function apiErrorHandler (app: any, path: string) {
-  app.use(path, function (err: any, _req: Request, res: Response, _next: NextFunction) {
-    const response = {
-      msg: err.message,
-      type: err.type,
-      status: err.statusCode || 500
-    }
-    if (response.status === 500) {
-      debug(err)
-    }
-    res.status(err.statusCode || 500)
-    return res.json(response)
-  })
-}
+    this.router.all('/api/activate', (_req: Request, res: Response, next: NextFunction) => {
+      grantAccess()
+      res.locals.result = res.locals.result || {}
+      res.locals.result.ok = true
+    })
+  }
 
-export function addMiddleware(app: any) {
-  const io = sio.getIo()
-  if (io) {
-      io.on('connection', function (socket) {
+  private laserStatus(_req: Request, res: Response, next: NextFunction) {
+    res.locals.status = getStatus()
+    next()
+  }
+
+  public addMiddleware(app: Application) {
+    const io = sio.getIo()
+    if (io) {
+      io.on('connection', (socket) => {
         socket.emit('status', getStatus())
       })
+    }
+  }
+
+  public addErrorHandlers(app: Application) {
+    app.use('/api', (err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const response = {
+        msg: err?.message,
+        type: err?.type,
+        status: err?.statusCode || 500
+      }
+      if (response.status === 500) {
+        debug(err)
+      }
+      res.status(err?.statusCode || 500)
+      return res.json(response)
+    })
+  }
+
+  private registerEventHandlers() {
+    onLaser('laser', (event: LaserEvent) => {
+      debug('New event from laser ' + event.id)
+      const io = sio.getIo()
+      if (io) io.emit('laser', event)
+    })
+
+    onLaser('access', (event: LaserEvent) => {
+      debug('New event from access ' + event.id)
+      const io = sio.getIo()
+      if (io) io.emit('access', event)
+    })
+
+    onLaser('status', (event: LaserEvent) => {
+      debug('New event from status ' + event.id)
+      const io = sio.getIo()
+      if (io) io.emit('status', event)
+    })
   }
 }
-
-export function addErrorHandlers(app: any) {
-  apiErrorHandler(app, '/api')
-}
-
-onLaser('laser', function (event: any) {
-  debug('New event from laser ' + event.id)
-  const io = sio.getIo()
-  if (io) io.emit('laser', event)
-})
-
-onLaser('access', function (event: any) {
-  debug('New event from access ' + event.id)
-  const io = sio.getIo()
-  if (io) io.emit('access', event)
-})
-
-onLaser('status', function (event: any) {
-  debug('New event from status ' + event.id)
-  const io = sio.getIo()
-  if (io) io.emit('status', event)
-})
-
-export default { router, addErrorHandlers, addMiddleware }
