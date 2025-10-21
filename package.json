@@ -18,10 +18,9 @@
     "onoff": "^6.0.3",
     "promise": "~6.1.0",
     "request": "^2.81.0",
-    "request-promise": "^4.2.0",
+    "request-promise-native": "^1.0.9",
     "socket.io": "^4.8.1",
     "superagent": "~10.1.1",
-    "superagent-promise": "^0.2.0",
     "supervisor": "~0.6.0",
     "underscore": "^1.8.2"
   },

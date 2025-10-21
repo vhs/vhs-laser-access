@@ -3,7 +3,7 @@
 
 const CryptoJS = require('crypto-js')
 const debug = require('debug')('laser:control')
-const rp = require('request-promise')
+const rp = require('request-promise-native')
 const config = require('../config')
 const Led = require('./led').Led
 const { gpios, ON, OFF } = require('./constants')
