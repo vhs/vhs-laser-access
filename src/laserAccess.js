@@ -3,7 +3,6 @@
 
 const CryptoJS = require('crypto-js')
 const debug = require('debug')('laser:control')
-const fetch = require('node-fetch')
 const config = require('../config')
 const Led = require('./led').Led
 const { gpios, ON, OFF } = require('./constants')
@@ -63,12 +62,13 @@ function sendAPILaserUpdate(status) {
   const signedRequestUrl = config.api.baseUrl + requestURI + '?hash=' + hash
 
   return fetch(signedRequestUrl, {
-    method: "PUT",
-    body: jsonData,
-	  headers: {
+    method: 'PUT',
+    headers: {
+      'Accept': 'application/json',
       'Content-Type': 'application/json'
-    }
-  })
+    },
+    body: jsonData
+  }).then((response) => response.json())
 }
 
 function startLaser() {
