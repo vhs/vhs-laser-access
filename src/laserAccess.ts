@@ -4,22 +4,21 @@ import config from '../config.json'
 import { Led } from './led'
 import { gpios, ON, OFF } from './constants'
 import { Gpio as RealGpio } from 'onoff';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-// @ts-ignore - no type declarations for mock-gpio
-const { Gpio: MockGpio } = require('../test/mock-gpio');
+import { Gpio as MockGpio } from './mock-gpio';
 
-let Gpio: RealGpio | typeof MockGpio;
+let Gpio: typeof RealGpio | typeof MockGpio
 
 try {
   // try creating a GPIO to ensure availability
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const testGpio = new RealGpio(gpios.GPIO_LASER, 'out');
-  Gpio = RealGpio;
-  debugLib('starting with real GPIOs');
+  const testGpio = new RealGpio(gpios.GPIO_LASER, 'out')
+  Gpio = RealGpio
+  debugLib('starting with real GPIOs')
 } catch (_err) {
-  // fallback to mock
-  Gpio = MockGpio;
-  debugLib("starting with mocked GPIOs");
+  // fallback to test mock implementation in src/mock-gpio
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  Gpio = MockGpio
+  debugLib('starting with mocked GPIOs')
 }
 
 import { EventEmitter } from 'events'
@@ -60,15 +59,15 @@ function sendAPILaserUpdate(statusStr: string) {
   const formdata: any = {}
   formdata.value = statusStr
   formdata.ts = '' + ts
-  formdata.client = (config as any).api.clientName
+  formdata.client = config.api.clientName
 
   const jsonData = JSON.stringify(formdata)
 
-  const key = ts + jsonData + (config as any).api.clientSecret
+  const key = ts + jsonData + config.api.clientSecret
 
   const hash = CryptoJS.HmacSHA256(jsonData, key)
 
-  const signedRequestUrl = (config as any).api.baseUrl + requestURI + '?hash=' + hash
+  const signedRequestUrl = config.api.baseUrl + requestURI + '?hash=' + hash
 
   return fetch(signedRequestUrl, {
     method: 'PUT',
@@ -81,17 +80,17 @@ function sendAPILaserUpdate(statusStr: string) {
 }
 
 function startLaser() {
-  if (!chiller.online) {
+  if (!chiller.readSync()) {
     return Promise.reject('Chiller is not running')
   }
-  if (!blower.online) {
+  if (!blower.readSync()) {
     return Promise.reject('Blower is not running')
   }
 
   debugLib('Laser started')
   laserWasStarted = true
-  emitter.emit('laser', { id: 'laserStarted', name: 'Laser Started' })
-  ;(laser as any).online = true
+  emitter.emit('laser', { id: 'laserStarted', name: 'Laser Started' });
+
   sendAPILaserUpdate('on')
     .then(function () {
       debugLib('updated api - startup')
@@ -99,7 +98,7 @@ function startLaser() {
     .catch(function () {
       debugLib('error updating api - startup')
     })
-  return (laser as any).write(ON)
+  return laser.write(ON)
 }
 
 function shutdownLaser() {
@@ -113,25 +112,22 @@ function shutdownLaser() {
     })
   laserWasStarted = false
   emitter.emit('laser', { id: 'laserShutdown', name: 'Laser Shutdown' })
-  ;(laser as any).online = false
-  return (laser as any).write(OFF)
+  return laser.write(OFF)
 }
 
 function startBlower() {
   debugLib('Blower started')
   emitter.emit('laser', { id: 'blowerStarted', name: 'Blower Started' })
-  ;(blower as any).online = true
-  return (blower as any).write(ON)
+  return blower.write(ON)
 }
 
 function shutdownBlower() {
-  if ((laser as any).online) {
+  if (laser.readSync() === ON) {
     return Promise.reject('Laser is running, will not shutdown blower')
   }
   debugLib('Blower shutdown')
   emitter.emit('laser', { id: 'blowerShutdown', name: 'Blower Shutdown' })
-  ;(blower as any).online = false
-  return (blower as any).write(OFF)
+  return blower.write(OFF)
 }
 
 function startChiller() {
@@ -140,12 +136,11 @@ function startChiller() {
     id: 'chillerStarted',
     name: 'Chiller/Compressor Started'
   })
-  ;(chiller as any).online = true
-  return (chiller as any).write(ON)
+  return chiller.write(ON)
 }
 
 function shutdownChiller() {
-  if ((laser as any).online) {
+  if (laser.readSync() === ON) {
     return Promise.reject('Laser is running, will not shutdown chiller')
   }
   debugLib('Chiller shutdown')
@@ -154,12 +149,11 @@ function shutdownChiller() {
     id: 'chillerShutdown',
     name: 'Chiller/Comperssor Shutdown'
   })
-  ;(chiller as any).online = false
-  return (chiller as any).write(OFF)
+  return chiller.write(OFF)
 }
 
 function mainSwitchOn() {
-  return (mainSwitch as any).readSync() === ON
+  return mainSwitch.readSync() === ON
 }
 
 function setStatus(s: any) {
@@ -167,7 +161,7 @@ function setStatus(s: any) {
   emitter.emit('status', s)
 }
 
-function getStatus() {
+export function getStatus() {
   return status
 }
 
@@ -279,7 +273,7 @@ export function grantAccess() {
 
 let switchTimeout: any
 
-(mainSwitch as any).watch(function () {
+mainSwitch.watch(function () {
   clearTimeout(switchTimeout)
   switchTimeout = setTimeout(function () {
     if (mainSwitchOn()) {
@@ -294,6 +288,3 @@ export function on(event: string, listener: (...args: any[]) => void) {
   return emitter.on(event, listener)
 }
 
-export { startLaser, startBlower, startChiller, shutdownLaser, shutdownBlower, shutdownChiller }
-
-export { getStatus }
