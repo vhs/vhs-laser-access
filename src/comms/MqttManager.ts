@@ -1,6 +1,6 @@
 import debugLib from 'debug'
 import mqtt from 'mqtt'
-import { config } from './Configuration'
+import { config } from '../Configuration'
 
 const debug = debugLib('laser:mqtt')
 

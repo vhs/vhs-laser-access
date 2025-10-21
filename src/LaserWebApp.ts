@@ -3,7 +3,7 @@ import path from 'path'
 import debugLib from 'debug'
 import express, { Request, Response, NextFunction, Application, RequestHandler, Router } from 'express'
 import { LaserController } from './controllers/LaserController'
-import { socketManager } from './SocketManager'
+import { socketManager } from './comms/SocketManager'
 
 const debug = debugLib('laser:web')
 

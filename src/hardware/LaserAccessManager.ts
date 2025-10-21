@@ -7,7 +7,7 @@ import { Gpio as RealGpio } from 'onoff';
 import { Gpio as MockGpio } from './MockGpio';
 
 import { EventEmitter } from 'events'
-import { mqttManager } from '../MqttManager'
+import { mqttManager } from '../comms/MqttManager'
 
 let Gpio: typeof RealGpio | typeof MockGpio
 

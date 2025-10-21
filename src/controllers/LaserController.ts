@@ -1,6 +1,6 @@
 import debugLib from 'debug'
 import { manager, LaserStatusEvent } from '../hardware/LaserAccessManager'
-import { socketManager } from '../SocketManager'
+import { socketManager } from '../comms/SocketManager'
 import { Router, Request, Response, NextFunction, Application } from 'express'
 
 const debug = debugLib('laser:web')
