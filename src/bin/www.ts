@@ -2,7 +2,6 @@
 
 import debugLib from 'debug'
 import { startApp, server } from '../app'
-import { AddressInfo } from 'net'
 
 const debug = debugLib('laser:web')
 

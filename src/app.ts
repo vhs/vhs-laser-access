@@ -8,7 +8,8 @@ import { init as initSocket } from './socket'
 const debug = debugLib('laser:web')
 
 const app = express()
-const server = new http.Server(app)
+
+export const server = new http.Server(app)
 
 initSocket(server)
 
@@ -46,7 +47,3 @@ export function startApp() {
   }
   return app
 }
-
-export { server }
-
-export default { addHandler, server, startApp }
