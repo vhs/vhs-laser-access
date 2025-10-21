@@ -1,19 +1,16 @@
 #!/usr/bin/env node
 
 import debugLib from 'debug'
-import appModule from '../app'
+import { startApp, server } from '../app'
+import { AddressInfo } from 'net'
 
 const debug = debugLib('laser:web')
 
-const app = appModule
+startApp()
 
-app.startApp()
+const rawPort = process.env.PORT
+const port: number = rawPort ? parseInt(rawPort, 10) || 3000 : 3000
 
-const server = app.server
-
-const port = process.env.PORT || 3000
-
-server.listen(port, function () {
-  // @ts-ignore
-  debug('Express server listening on port ' + server.address().port)
+server.listen(port, () => {
+  debug(`Express server listening on ${server.address()}`)
 })
