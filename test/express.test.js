@@ -1,9 +1,7 @@
 'use strict'
 
 const request = require('supertest')
-
 const testutil = require('./testutil')
-
 const app = testutil.getApp()
 
 describe('Core express tests', function () {

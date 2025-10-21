@@ -1,20 +1,26 @@
 // @ts-nocheck
 'use strict'
 
-let init
+const { LaserAccessApp } = require('../dist/app')
+
+let mainApp;
+let init = false;
 
 const getApp = function () {
-  const mainApp = require('../dist/app')
-  if (!init) {
-    mainApp.addHandler('/mock500', function (_req, _res, next) {
+  if (!mainApp) {
+    mainApp = new LaserAccessApp();
+
+    mainApp.expressApp.use('/mock500', function (_req, _res, next) {
       next('Unittest error')
     })
-    mainApp.addHandler('/api/mock500', function (_req, _res, next) {
+
+    mainApp.expressApp.use('/api/mock500', function (_req, _res, next) {
       next('Unittest error')
     })
-    init = true
+
+    mainApp.init()
   }
-  return mainApp.startApp()
+  return mainApp.expressApp
 }
 
 module.exports = {

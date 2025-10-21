@@ -1,49 +1,50 @@
 import http from 'http'
 import path from 'path'
 import debugLib from 'debug'
-import express, { Request, Response, NextFunction } from 'express'
+import express, { Request, Response, NextFunction, Application, RequestHandler, Router } from 'express'
 import routes from './routes'
 import { init as initSocket } from './socket'
 
 const debug = debugLib('laser:web')
 
-const app = express()
+export class LaserAccessApp {
+    expressApp: Application;
+    server: http.Server;
 
-export const server = new http.Server(app)
+    constructor() {
+        this.expressApp = express()
+        this.server = new http.Server(this.expressApp)
+        initSocket(this.server)
+    }
 
-initSocket(server)
+    init() {
+        routes.addMiddleware(this.expressApp)
+        this.expressApp.use('/', routes.router)
 
-let init = false
+        routes.addErrorHandlers(this.expressApp)
 
-app.set('views', path.join(__dirname, '..', 'views'))
-app.set('view engine', 'pug')
+        this.expressApp.set('views', path.join(__dirname, '..', 'views'))
+        this.expressApp.set('view engine', 'pug')
 
-export function addHandler(pathStr: string, handler: any) {
-  app.use(pathStr, handler)
-}
+        this.expressApp.use(express.static(path.join(__dirname, '..', 'public')))
 
-export function startApp() {
-  if (!init) {
-    routes.addMiddleware(app)
-    app.use('/', routes.router)
-    routes.addErrorHandlers(app)
-    app.use(express.static(path.join(__dirname, '..', 'public')))
+        this.expressApp.use(function (_req: Request, _res: Response, next: NextFunction) {
+            const err = new Error('Not Found') as Error & { status?: number }
+            err.status = 404
+            console.log("LAA 404 handler")
+            next(err)
+        })
 
-    app.use(function (_req: Request, _res: Response, next: NextFunction) {
-      const err: any = new Error('Not Found')
-      err.status = 404
-      next(err)
-    })
-
-    app.use(function (err: any, _req: any, res: any, _next: any) {
-      debug(err)
-      res.status(err.status || 500)
-      res.render('error', {
-        message: err.message || err,
-        error: {}
-      })
-    })
-    init = true
-  }
-  return app
+        this.expressApp.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+            // narrow unknown to Error-like
+            const e = err as Error & { status?: number }
+            debug(e)
+            res.status(e.status || 500)
+            console.log("LAA error handler")
+            res.render('error', {
+                message: e.message || e,
+                error: e
+            })
+        })
+    }
 }
