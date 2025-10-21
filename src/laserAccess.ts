@@ -24,33 +24,38 @@ try {
 import { EventEmitter } from 'events'
 import { maintenanceStatus } from './mqtt'
 
-const laser = new Gpio(gpios.GPIO_LASER, 'out')
-const blower = new Gpio(gpios.GPIO_BLOWER, 'out')
-const chiller = new Gpio(gpios.GPIO_CHILLER, 'out')
-const mainSwitch = new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both')
-const LEDs = {
-  green: new Led(new Gpio(gpios.GPIO_LED_GREEN, 'out')),
-  red: new Led(new Gpio(gpios.GPIO_LED_RED, 'out'))
+const pins = {
+    laser: new Gpio(gpios.GPIO_LASER, 'out'),
+    blower: new Gpio(gpios.GPIO_BLOWER, 'out'),
+    chiller: new Gpio(gpios.GPIO_CHILLER, 'out'),
+    mainSwitch: new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both'),
+    LEDs: {
+        green: new Led(new Gpio(gpios.GPIO_LED_GREEN, 'out')),
+        red: new Led(new Gpio(gpios.GPIO_LED_RED, 'out'))
+    }
 }
 
 const emitter = new EventEmitter()
 
-LEDs.red.enable()
+pins.LEDs.red.enable()
 
-export { LEDs }
+export const LEDs = pins.LEDs;
 
 export const Status = {
   shutdown: { id: 'shutdown', name: 'Shutdown' },
   ready: { id: 'ready', name: 'Ready' },
   starting: { id: 'starting', name: 'Starting' },
   shuttingDown: { id: 'shuttingDown', name: 'Shutting Down' }
-} as const
+}
 
 const startTimers: any = {}
-let laserWasStarted = false
-let chillerRunning = false
-let authorized = false
-let status = Status.shutdown
+
+let state = {
+    laserWasStarted: false,
+    chillerRunning: false,
+    authorized: false,
+    status: Status.shutdown
+}
 
 function sendAPILaserUpdate(statusStr: string) {
   const ts = Math.floor(Date.now() / 1000)
@@ -80,15 +85,15 @@ function sendAPILaserUpdate(statusStr: string) {
 }
 
 export function startLaser() {
-  if (!chiller.readSync()) {
+  if (!pins.chiller.readSync()) {
     return Promise.reject('Chiller is not running')
   }
-  if (!blower.readSync()) {
+  if (!pins.blower.readSync()) {
     return Promise.reject('Blower is not running')
   }
 
   debugLib('Laser started')
-  laserWasStarted = true
+  state.laserWasStarted = true
   emitter.emit('laser', { id: 'laserStarted', name: 'Laser Started' });
 
   sendAPILaserUpdate('on')
@@ -98,7 +103,7 @@ export function startLaser() {
     .catch(function () {
       debugLib('error updating api - startup')
     })
-  return laser.write(ON)
+  return pins.laser.write(ON)
 }
 
 export function shutdownLaser() {
@@ -110,24 +115,24 @@ export function shutdownLaser() {
     .catch(function () {
       debugLib('error updating api - shutdown')
     })
-  laserWasStarted = false
+  state.laserWasStarted = false
   emitter.emit('laser', { id: 'laserShutdown', name: 'Laser Shutdown' })
-  return laser.write(OFF)
+  return pins.laser.write(OFF)
 }
 
 export function startBlower() {
   debugLib('Blower started')
   emitter.emit('laser', { id: 'blowerStarted', name: 'Blower Started' })
-  return blower.write(ON)
+  return pins.blower.write(ON)
 }
 
 export function shutdownBlower() {
-  if (laser.readSync() === ON) {
+  if (pins.laser.readSync() === ON) {
     return Promise.reject('Laser is running, will not shutdown blower')
   }
   debugLib('Blower shutdown')
   emitter.emit('laser', { id: 'blowerShutdown', name: 'Blower Shutdown' })
-  return blower.write(OFF)
+  return pins.blower.write(OFF)
 }
 
 export function startChiller() {
@@ -136,57 +141,57 @@ export function startChiller() {
     id: 'chillerStarted',
     name: 'Chiller/Compressor Started'
   })
-  return chiller.write(ON)
+  return pins.chiller.write(ON)
 }
 
 export function shutdownChiller() {
-  if (laser.readSync() === ON) {
+  if (pins.laser.readSync() === ON) {
     return Promise.reject('Laser is running, will not shutdown chiller')
   }
   debugLib('Chiller shutdown')
-  chillerRunning = false
+  state.chillerRunning = false
   emitter.emit('laser', {
     id: 'chillerShutdown',
     name: 'Chiller/Comperssor Shutdown'
   })
-  return chiller.write(OFF)
+  return pins.chiller.write(OFF)
 }
 
 export function mainSwitchOn() {
-  return mainSwitch.readSync() === ON
+  return pins.mainSwitch.readSync() === ON
 }
 
 function setStatus(s: any) {
-  status = s
+  state.status = s
   emitter.emit('status', s)
 }
 
 export function getStatus() {
-  return status
+  return state.status
 }
 
 export function startAll(): Promise<any> {
   startTimers.abortStartup = false
 
   return new Promise(function (resolve, reject) {
-    if (!authorized) {
-      LEDs.red.blink(150)
+    if (!state.authorized) {
+      pins.LEDs.red.blink(150)
       setTimeout(function () {
-        LEDs.red.enable()
+        pins.LEDs.red.enable()
       }, 2000)
       return reject('Access Denied')
     }
 
     if (maintenanceStatus !== 'ok') {
-      LEDs.red.blink(150)
+      pins.LEDs.red.blink(150)
       setTimeout(function () {
-        LEDs.red.enable()
+        pins.LEDs.red.enable()
       }, 2000)
       return reject('Maintenance Overdue: Access Denied')
     }
 
     const startLaserAndBlower = function () {
-      LEDs.green.enable()
+      pins.LEDs.green.enable()
       setStatus(Status.ready)
       return Promise.all([startBlower(), startLaser()])
         .then(resolve)
@@ -197,12 +202,12 @@ export function startAll(): Promise<any> {
       startTimers.abortShutdown = true
     }
 
-    if (chillerRunning) {
+    if (state.chillerRunning) {
       debugLib('Chiller was already running, starting laser and blower immediately')
       return startLaserAndBlower()
     }
 
-    LEDs.green.blink(300)
+    pins.LEDs.green.blink(300)
     setStatus(Status.starting)
 
     startChiller().then(function () {
@@ -211,7 +216,7 @@ export function startAll(): Promise<any> {
         debugLib('Startup aborted')
         resolve('Startup aborted')
       } else {
-        chillerRunning = true
+        state.chillerRunning = true
         startLaserAndBlower()
       }
     })
@@ -226,11 +231,11 @@ export function shutdownAll(): Promise<any> | void {
   startTimers.abortShutdown = false
   setStatus(Status.shuttingDown)
 
-  if (laserWasStarted) {
+  if (state.laserWasStarted) {
     return new Promise(function (resolve, reject) {
       shutdownLaser()
         .then(function () {
-          return LEDs.green.blink(300)
+          return pins.LEDs.green.blink(300)
         })
         .then(function () {
           startTimers.shutdown = setTimeout(function () {
@@ -239,7 +244,7 @@ export function shutdownAll(): Promise<any> | void {
               resolve('Shutdown aborted')
             } else {
               setStatus(Status.shutdown)
-              LEDs.green.disable()
+              pins.LEDs.green.disable()
               Promise.all([shutdownBlower(), shutdownChiller()])
                 .then(resolve)
                 .catch(reject)
@@ -249,7 +254,7 @@ export function shutdownAll(): Promise<any> | void {
     })
   } else {
     startTimers.abortStartup = true
-    LEDs.green.disable()
+    pins.LEDs.green.disable()
     setStatus(Status.shutdown)
     return Promise.all([shutdownLaser(), shutdownBlower(), shutdownChiller()])
   }
@@ -259,21 +264,21 @@ let disableAccessTimer: any
 
 export function grantAccess() {
   debugLib('Grant access request')
-  authorized = true
+  state.authorized = true
   emitter.emit('access', 'access granted')
   if (disableAccessTimer) {
     clearTimeout(disableAccessTimer)
   }
   disableAccessTimer = setTimeout(function () {
     emitter.emit('access', 'awaiting access')
-    authorized = false
+    state.authorized = false
     disableAccessTimer = null
   }, 20000)
 }
 
 let switchTimeout: any
 
-mainSwitch.watch(function () {
+pins.mainSwitch.watch(function () {
   clearTimeout(switchTimeout)
   switchTimeout = setTimeout(function () {
     if (mainSwitchOn()) {
@@ -287,4 +292,3 @@ mainSwitch.watch(function () {
 export function on(event: string, listener: (...args: any[]) => void) {
   return emitter.on(event, listener)
 }
-
