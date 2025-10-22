@@ -11,17 +11,15 @@ import { mqttManager } from '../comms/MqttManager'
 
 let Gpio: typeof RealGpio | typeof MockGpio
 
+// determine if we can use real GPIOs or need to fallback to mock
 try {
-  // try creating a GPIO to ensure availability
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const testGpio = new RealGpio(gpios.GPIO_LASER, 'out')
+  const testGpio = new RealGpio(gpios.GPIO_LASER, 'out') // the only way to know if real gpios are available is to try
   Gpio = RealGpio
-  debugLib('starting with real GPIOs')
+  debugLib('Starting with real GPIOs')
 } catch (_err) {
-  // fallback to test mock implementation in src/mock-gpio
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   Gpio = MockGpio
-  debugLib('starting with mocked GPIOs')
+  debugLib('Starting with mocked GPIOs')
 }
 
 export interface LaserStatusEvent {
@@ -35,46 +33,34 @@ const StatusStarting: LaserStatusEvent = { id: 'starting', name: 'Starting' }
 const StatusShuttingDown: LaserStatusEvent = { id: 'shuttingDown', name: 'Shutting Down' }
 
 class LaserAccessManager {
-  private pins: {
-    laser: any
-    blower: any
-    chiller: any
-    mainSwitch: any
-    LEDs: { green: Led; red: Led }
+  pins = {
+    laser: new Gpio(gpios.GPIO_LASER, 'out'),
+    blower: new Gpio(gpios.GPIO_BLOWER, 'out'),
+    chiller: new Gpio(gpios.GPIO_CHILLER, 'out'),
+    mainSwitch: new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both'),
+    LEDs: {
+      green: new Led(new Gpio(gpios.GPIO_LED_GREEN, 'out')),
+      red: new Led(new Gpio(gpios.GPIO_LED_RED, 'out'))
+    }
   }
+
   private emitter = new EventEmitter()
   private startTimers: any = {}
-  private state: {
-    laserWasStarted: boolean
-    chillerRunning: boolean
-    authorized: boolean
-    status: LaserStatusEvent
-  }
+
+  private state = {
+    laserWasStarted: false,
+    chillerRunning: false,
+    authorized: false,
+    status: StatusShutdown
+  };
+
   private disableAccessTimer: any = null
   private switchTimeout: any = null
 
   constructor() {
-    this.pins = {
-      laser: new Gpio(gpios.GPIO_LASER, 'out'),
-      blower: new Gpio(gpios.GPIO_BLOWER, 'out'),
-      chiller: new Gpio(gpios.GPIO_CHILLER, 'out'),
-      mainSwitch: new Gpio(gpios.GPIO_MAIN_SWITCH, 'in', 'both'),
-      LEDs: {
-        green: new Led(new Gpio(gpios.GPIO_LED_GREEN, 'out')),
-        red: new Led(new Gpio(gpios.GPIO_LED_RED, 'out'))
-      }
-    }
-
-    this.state = {
-      laserWasStarted: false,
-      chillerRunning: false,
-      authorized: false,
-      status: StatusShutdown
-    }
-
     this.pins.LEDs.red.enable()
 
-    // wire main switch watcher
+    // Watch the main physical switch for changes
     this.pins.mainSwitch.watch(() => {
       clearTimeout(this.switchTimeout)
       this.switchTimeout = setTimeout(() => {
@@ -87,11 +73,7 @@ class LaserAccessManager {
     })
   }
 
-  // expose LEDs
-  public get LEDs() {
-    return this.pins.LEDs
-  }
-
+  // inform the API if the laser is currently on or off
   private sendAPILaserUpdate(statusStr: string) {
     const ts = Math.floor(Date.now() / 1000)
     const requestURI = '/s/vhs/data/laser/update'
@@ -314,4 +296,4 @@ class LaserAccessManager {
 
 export const manager = new LaserAccessManager()
 
-export const LEDs = manager.LEDs
+export const LEDs = manager.pins.LEDs

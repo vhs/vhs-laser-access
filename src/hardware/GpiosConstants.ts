@@ -1,3 +1,5 @@
+// These are the hardware pins used to control the laser via relays
+// See readme for more details
 export const gpios = {
   GPIO_LASER: 22,
   GPIO_BLOWER: 27,

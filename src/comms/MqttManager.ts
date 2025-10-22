@@ -4,6 +4,10 @@ import { config } from '../Configuration'
 
 const debug = debugLib('laser:mqtt')
 
+
+// We use MQTT to receive maintenance status updates from the laser controller
+// This still needs some work, as the laser status isn't very visible to the user yet
+// but if we get anything other than "ok" here the laser will not start up
 export class MqttManager {
     private client: mqtt.MqttClient | null = null
     public maintenanceStatus: string = 'ok'

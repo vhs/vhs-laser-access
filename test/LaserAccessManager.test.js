@@ -5,7 +5,7 @@ const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const sinon = require('sinon')
 
-const { manager } = require('../dist/hardware/LaserAccessManager')
+const { manager, LEDs } = require('../dist/hardware/LaserAccessManager')
 const mockgpio = require('../dist/hardware/MockGpio')
 const { gpios, ON, OFF } = require("../dist/hardware/GpiosConstants");
 
@@ -83,12 +83,12 @@ describe('Laser startup and shutdown', function () {
   })
 
   it('turns on the main switch, only the chiller turns on', function () {
-    sinon.spy(manager.LEDs.green, 'blink')
+    sinon.spy(LEDs.green, 'blink')
     manager.startAll()
     manager.getStatus().should.have.property('id', 'starting')
     state.should.have.property(gpios.GPIO_CHILLER, ON)
-    manager.LEDs.green.blink.should.have.property('calledOnce', true)
-    manager.LEDs.green.blink.restore()
+    LEDs.green.blink.should.have.property('calledOnce', true)
+    LEDs.green.blink.restore()
   })
 
   // it('turns on the laser and blower after 45 seconds', function () {
@@ -273,24 +273,24 @@ describe('Status LED tests', function () {
 
   it('turns on a green LED', function () {
     state.should.have.property(gpios.GPIO_LED_GREEN, OFF)
-    return manager.LEDs.green.enable().then(function () {
+    return LEDs.green.enable().then(function () {
       state.should.have.property(gpios.GPIO_LED_GREEN, ON)
     })
   })
 
   it('turns off the green LED', function () {
     state.should.have.property(gpios.GPIO_LED_GREEN, ON)
-    return manager.LEDs.green.disable().then(function () {
+    return LEDs.green.disable().then(function () {
       state.should.have.property(gpios.GPIO_LED_GREEN, OFF)
     })
   })
 
   it('toggles the green LED', function () {
-    return manager.LEDs.green
+    return LEDs.green
       .toggle()
       .then(function () {
         state.should.have.property(gpios.GPIO_LED_GREEN, ON)
-        return manager.LEDs.green.toggle()
+        return LEDs.green.toggle()
       })
       .then(function () {
         state.should.have.property(gpios.GPIO_LED_GREEN, OFF)
@@ -298,7 +298,7 @@ describe('Status LED tests', function () {
   })
 
   it('starts blinking the red LED', function () {
-    return manager.LEDs.red.blink(300).then(function () {
+    return LEDs.red.blink(300).then(function () {
       state.should.have.property(gpios.GPIO_LED_RED, ON)
       clock.tick(300)
       state.should.have.property(gpios.GPIO_LED_RED, OFF)
@@ -309,7 +309,7 @@ describe('Status LED tests', function () {
 
   it('starts blinking the red LED again, should keep blinking', function () {
     clock.tick(300)
-    return manager.LEDs.red.blink(300).then(function () {
+    return LEDs.red.blink(300).then(function () {
       state.should.have.property(gpios.GPIO_LED_RED, OFF)
       clock.tick(300)
       state.should.have.property(gpios.GPIO_LED_RED, ON)
@@ -319,7 +319,7 @@ describe('Status LED tests', function () {
   })
 
   it('stops blinking the red LED', function () {
-    return manager.LEDs.red.disable().then(function () {
+    return LEDs.red.disable().then(function () {
       state.should.have.property(gpios.GPIO_LED_RED, OFF)
       clock.tick(300)
       state.should.have.property(gpios.GPIO_LED_RED, OFF)
@@ -327,7 +327,7 @@ describe('Status LED tests', function () {
   })
 
   it('starts blinking the red LED yet again', function () {
-    return manager.LEDs.red.blink(300).then(function () {
+    return LEDs.red.blink(300).then(function () {
       state.should.have.property(gpios.GPIO_LED_RED, ON)
       clock.tick(300)
       state.should.have.property(gpios.GPIO_LED_RED, OFF)
