@@ -16,6 +16,7 @@ async function start() {
     const port: number = config.port || 3000
 
     // Start the server and initialize socket.io
+    // a hostname is required here to make sure socket.io works correctly
     await app.app.listen({ port, host: '0.0.0.0'})
 
     debug(`Fastify server listening on port ${port}`)

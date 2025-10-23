@@ -17,20 +17,15 @@ declare module 'fastify' {
 }
 
 export class LaserWebApp {
-    app: FastifyInstance;
-    laserController: LaserController;
-
-    constructor() {
-        this.app = fastify({
-            logger: {
-                level: 'info',
-                transport: {
-                    target: "@fastify/one-line-logger",
-                }
+    laserController: LaserController = new LaserController();
+    app: FastifyInstance = fastify({
+        logger: {
+            level: 'info',
+            transport: {
+                target: "@fastify/one-line-logger",
             }
-        });
-        this.laserController = new LaserController();
-    }
+        }
+    });
 
     async init() {
         // setup view engine
@@ -48,9 +43,8 @@ export class LaserWebApp {
 
         // register socket.io manager with fastify
         await this.app.register(socketManager);
-        //this.app.io.attach(this.app.server);
+        
         // mount the laser controller routes at '/'
-
         await this.laserController.setupRoutes(this.app);
 
         // catch unhandled routes with 404
