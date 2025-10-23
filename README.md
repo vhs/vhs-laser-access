@@ -37,6 +37,13 @@ Will check for ok status over MQTT before allowing the laser switch to be unlock
 6. `yarn test` will compile the code and test it.
 7. visit `http://127.0.0.1:3000/` to view the running server
 
+## Runtime options
+
+- `NODE_ENV=test yarn start` disable mqtt while running (see `./comms/MqttManager.ts`)
+- `yarn start -- --gpio-in` for testing, type 0+newline or 1+newline to toggle the main switch on and off (see `./src/hardware/MockGpio.ts`)
+- `yarn node ./dist/main.js` run without re-compiling first
+- `NODE_ENV=test yarn node ./dist/main.js --gpio-in` combine all of the above
+
 # Deploying to a raspberry pi
 
 This code is to be run on a raspberry pi at the hack space, with a "hat" board on it that provides the relays, switches, and other connections. Here are instructions for getting it running on a pi:
@@ -61,10 +68,6 @@ This code is to be run on a raspberry pi at the hack space, with a "hat" board o
         - `source ~/.profile` reload .profile to activate the new PATH
     - `npm install -g corepack` install yarn, the project's preferred package manager (others probably work).
     - `corepack enable` enable yarn
-    - `yarn global add pm2` install `pm2`, which starts and restarts the webapp if it crashes or the system reboots
-    - `echo "export PATH=\"\$(yarn global bin):\$PATH\"" >> ~/.profile` add yarn path to your PATH
-    - `source ~/.profile` reload
-    - `pm2 startup` follow instructions - this persists pm2, so it starts on boot
 4.  checkout this repo, build, and run
     - `git clone https://github.com/vhs/vhs-laser-access` checkout repo
     - `cd vhs-laser-access` enter repo
@@ -73,5 +76,9 @@ This code is to be run on a raspberry pi at the hack space, with a "hat" board o
     - setup a `config.json` file with the structure described in `src/Configuration.ts`
     - `yarn start` run for the first time - visit it at `http://laser.local:3000/`
 5. Persist the web app with pm2
+    - `yarn global add pm2` install `pm2`, which starts and restarts the webapp if it crashes or the system reboots
+    - `echo "export PATH=\"\$(yarn global bin):\$PATH\"" >> ~/.profile` add yarn global binary path to your PATH
+    - `source ~/.profile` reload PATH from .profile
+    - `pm2 startup` follow instructions - this persists pm2, so it starts on boot
     - `pm2 start dist/main.js --name laser` run the app
     - `pm2 save` make sure the app re-starts if the system is reset
