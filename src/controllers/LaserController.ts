@@ -1,6 +1,7 @@
 import debugLib from 'debug'
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { manager, LaserStatusEvent } from '../hardware/LaserAccessManager'
+
 const debug = debugLib('laser:web')
 
 // this manages the '/' and '/api/activate' routes for the laser web interface

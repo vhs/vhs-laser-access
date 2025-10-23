@@ -10,6 +10,7 @@ import { Server as IOServer } from 'socket.io';
 
 const debug = debugLib('laser:web')
 
+// add an io property to the fastify instance's type signature
 declare module 'fastify' {
   interface FastifyInstance {
     io: IOServer
