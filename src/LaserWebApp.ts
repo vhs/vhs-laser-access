@@ -22,7 +22,12 @@ export class LaserWebApp {
 
     constructor() {
         this.app = fastify({
-            logger: true
+            logger: {
+                level: 'info',
+                transport: {
+                    target: "@fastify/one-line-logger",
+                }
+            }
         });
         this.laserController = new LaserController();
     }
