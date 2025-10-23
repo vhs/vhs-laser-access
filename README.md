@@ -21,25 +21,6 @@ It is also used to control access to the laser. Access is handled by the members
 - `yarn node ./dist/main.js` run without re-compiling first
 - `NODE_ENV=test yarn node ./dist/main.js --gpio-in` combine all of the above
 
-# Wiring
-
-- Chiller Relay - GPIO17, pin 11 - Green Wire Pin 4
-- Ventilation Relay - GPIO27 pin 13 - Orange Wire Pin 5
-- Laser Relay - GPIO22 pin 15 - White Wire Pin 3
-- Main On/Off Switch - GPIO4 pin 7
-- Green LED - GPIO23 pin 16
-- Red LED - GPIO24 pin 18
-
-The following pins are used for NFC but it's currently not enabled.
-
-- Buzzer - GPIO18 pin 12
-- NFC Reset GPIO25 pin 22
-- NFC MOSI GPIO10 pin 19
-- NFC MOSO GPIO09 pin 21
-- NFC CLK GPIO11 pin 23
-- NFC CE0 GPIO08 pin 24
-- NFC CE1 GPIO07 pin 26
-
 # MQTT for Maintanance Status
 
 This app will check for "ok" status over MQTT before allowing the laser switch to be unlocked. This status is set by LCC and gives the LCC a quick way to take the laser out of service whenever necessary.
@@ -82,3 +63,22 @@ This code is to be run on a raspberry pi at the hack space, with a "hat" board o
     - `pm2 startup` follow instructions - this persists pm2, so it starts on boot
     - `pm2 start dist/main.js --name laser` run the app
     - `pm2 save` make sure the app re-starts if the system is reset
+
+# Wiring
+
+- Chiller Relay - GPIO17, pin 11 - Green Wire Pin 4
+- Ventilation Relay - GPIO27 pin 13 - Orange Wire Pin 5
+- Laser Relay - GPIO22 pin 15 - White Wire Pin 3
+- Main On/Off Switch - GPIO4 pin 7
+- Green LED - GPIO23 pin 16
+- Red LED - GPIO24 pin 18
+
+The following pins are used for NFC but it's currently not enabled.
+
+- Buzzer - GPIO18 pin 12
+- NFC Reset GPIO25 pin 22
+- NFC MOSI GPIO10 pin 19
+- NFC MOSO GPIO09 pin 21
+- NFC CLK GPIO11 pin 23
+- NFC CE0 GPIO08 pin 24
+- NFC CE1 GPIO07 pin 26
