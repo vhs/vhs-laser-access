@@ -1,56 +1,67 @@
-import http from 'http'
 import path from 'path'
 import debugLib from 'debug'
-import express, { Request, Response, NextFunction, Application, RequestHandler, Router } from 'express'
+import fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import fastifyView from '@fastify/view'
+import fastifyStatic from '@fastify/static'
+import pug from 'pug'
 import { LaserController } from './controllers/LaserController'
-import { socketManager } from './comms/SocketManager'
+import socketManager from 'fastify-socket';
+import { Server as IOServer } from 'socket.io';
 
 const debug = debugLib('laser:web')
 
+declare module 'fastify' {
+  interface FastifyInstance {
+    io: IOServer
+  }
+}
+
 export class LaserWebApp {
-    expressApp: Application;
-    server: http.Server;
+    app: FastifyInstance;
     laserController: LaserController;
 
     constructor() {
-        this.expressApp = express();
-        this.server = new http.Server(this.expressApp);
+        this.app = fastify({
+            logger: true
+        });
         this.laserController = new LaserController();
-        socketManager.init(this.server);
     }
 
-    init() {
-        // setup view engine & static file delivery
-        this.expressApp.set('views', path.join(__dirname, '..', 'views'))
-        this.expressApp.set('view engine', 'pug')
-        this.expressApp.use(express.static(path.join(__dirname, '..', 'public')))
+    async init() {
+        // setup view engine
+        await this.app.register(fastifyView, {
+            engine: {
+                pug
+            },
+            root: path.join(__dirname, '..', 'views')
+        });
 
-        // setup socket.io middleware
-        this.laserController.setupStatusSocket(this.expressApp)
+        // setup static file delivery
+        await this.app.register(fastifyStatic, {
+            root: path.join(__dirname, '..', 'public')
+        });
 
+        // register socket.io manager with fastify
+        await this.app.register(socketManager);
+        //this.app.io.attach(this.app.server);
         // mount the laser controller routes at '/'
-        this.expressApp.use('/', this.laserController.router)
 
-        // laser controller has special error handler for API routes
-        this.laserController.addErrorHandlers(this.expressApp)
+        await this.laserController.setupRoutes(this.app);
 
-        // catch unhandled routes, create a 404 error
-        this.expressApp.use(function (_req: Request, _res: Response, next: NextFunction) {
+        // catch unhandled routes with 404
+        this.app.setNotFoundHandler((_request: FastifyRequest, reply: FastifyReply) => {
             const err = new Error('Not Found') as Error & { status?: number }
             err.status = 404
-            next(err)
-        })
+            reply.status(404).send(err)
+        });
 
-        // main error handler, renders an html error page
-        this.expressApp.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
-            // narrow unknown to Error-like
-            const e = err as Error & { status?: number }
-            debug(e)
-            res.status(e.status || 500)
-            res.render('error', {
-                message: e.message || e,
-                error: e
+        // main error handler
+        this.app.setErrorHandler((error: Error & { status?: number }, _request: FastifyRequest, reply: FastifyReply) => {
+            debug(error)
+            reply.status(error.status || 500).view('error', {
+                message: error.message || error,
+                error: error
             })
-        })
+        });
     }
 }
