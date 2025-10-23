@@ -4,7 +4,24 @@ Used to automate the startup and shutdown of the laser cutter and all of the dep
 
 It is also used to control access to the laser. Access is handled by the membership management application.
 
-## Wiring
+# Running the app
+
+1. install `node` (v22 or greater, ideally) and `yarn`.
+2. create a `./config.json` file, see `./src/Configuration.ts` for the schema of this file.
+3. `yarn install` will install packages.
+4. `yarn build` will compile the typescript code into `./dist`.
+5. `yarn start` will compile the code and run it.
+6. `yarn test` will compile the code and test it.
+7. visit `http://127.0.0.1:3000/` to view the running server
+
+## Runtime options
+
+- `NODE_ENV=test yarn start` disable mqtt while running (see `./comms/MqttManager.ts`)
+- `yarn start -- --gpio-in` for testing, type 0+newline or 1+newline to toggle the main switch on and off (see `./src/hardware/MockGpio.ts`)
+- `yarn node ./dist/main.js` run without re-compiling first
+- `NODE_ENV=test yarn node ./dist/main.js --gpio-in` combine all of the above
+
+# Wiring
 
 - Chiller Relay - GPIO17, pin 11 - Green Wire Pin 4
 - Ventilation Relay - GPIO27 pin 13 - Orange Wire Pin 5
@@ -23,26 +40,9 @@ The following pins are used for NFC but it's currently not enabled.
 - NFC CE0 GPIO08 pin 24
 - NFC CE1 GPIO07 pin 26
 
-## Check Maintanance Status Over MQTT
+# MQTT for Maintanance Status
 
-Will check for ok status over MQTT before allowing the laser switch to be unlocked. This status is set by LCC and gives the LCC a quick way to take the laser out of service whenever necessary.
-
-# Running the app
-
-1. install `node` (v22 or greater, ideally) and `yarn`.
-2. create a `./config.json` file, see `./src/Configuration.ts` for the schema of this file.
-3. `yarn install` will install packages.
-4. `yarn build` will compile the typescript code into `./dist`.
-5. `yarn start` will compile the code and run it.
-6. `yarn test` will compile the code and test it.
-7. visit `http://127.0.0.1:3000/` to view the running server
-
-## Runtime options
-
-- `NODE_ENV=test yarn start` disable mqtt while running (see `./comms/MqttManager.ts`)
-- `yarn start -- --gpio-in` for testing, type 0+newline or 1+newline to toggle the main switch on and off (see `./src/hardware/MockGpio.ts`)
-- `yarn node ./dist/main.js` run without re-compiling first
-- `NODE_ENV=test yarn node ./dist/main.js --gpio-in` combine all of the above
+This app will check for "ok" status over MQTT before allowing the laser switch to be unlocked. This status is set by LCC and gives the LCC a quick way to take the laser out of service whenever necessary.
 
 # Deploying to a raspberry pi
 
