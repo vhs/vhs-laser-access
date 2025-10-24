@@ -53,4 +53,12 @@ describe('Core web app tests', async function () {
     expect(error.message).to.exist
     expect(error.error).to.exist
   })
+
+  // this messes up downstream tests, so commenting out for now
+  // it('api responds to activate', async function () {
+  //   let res = await app.inject().get('/api/activate')
+  //   expect(res.statusCode).to.equal(200)
+  //   let data = await res.json();
+  //   expect(data.ok).to.equal(true)
+  // })
 })
