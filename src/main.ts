@@ -10,7 +10,8 @@ async function start() {
   try {
     // create the main fastify webapp
     const app = new LaserWebApp()
-    await app.init()
+    await app.setup()
+    app.setupErrors()
 
     // load port number from config
     const port: number = config.port || 3000

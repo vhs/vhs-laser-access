@@ -4,7 +4,8 @@ import fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import fastifyView from '@fastify/view'
 import fastifyStatic from '@fastify/static'
 import pug from 'pug'
-import { LaserController } from './controllers/LaserController'
+import { LaserRootController } from './controllers/LaserRootController'
+import { LaserApiController } from './controllers/LaserApiController'
 import socketManager from 'fastify-socket';
 import { Server as IOServer } from 'socket.io';
 
@@ -12,13 +13,12 @@ const debug = debugLib('laser:web')
 
 // add an io property to the fastify instance's type signature
 declare module 'fastify' {
-  interface FastifyInstance {
-    io: IOServer
-  }
+    interface FastifyInstance {
+        io: IOServer
+    }
 }
 
 export class LaserWebApp {
-    laserController: LaserController = new LaserController();
     app: FastifyInstance = fastify({
         logger: {
             level: 'info',
@@ -28,7 +28,7 @@ export class LaserWebApp {
         }
     });
 
-    async init() {
+    async setup() {
         // setup view engine
         await this.app.register(fastifyView, {
             engine: {
@@ -44,24 +44,45 @@ export class LaserWebApp {
 
         // register socket.io manager with fastify
         await this.app.register(socketManager);
-        
-        // mount the laser controller routes at '/'
-        await this.laserController.setupRoutes(this.app);
 
+        // register the / handler, and setup event passing to socket.io
+        await this.app.register(LaserRootController)
+
+        // register the /api handler
+        await this.app.register(LaserApiController, { prefix: '/api' })
+
+        return this;
+    }
+
+    setupErrors() {
         // catch unhandled routes with 404
         this.app.setNotFoundHandler((_request: FastifyRequest, reply: FastifyReply) => {
-            const err = new Error('Not Found') as Error & { status?: number }
+            let err: Error & { status?: number } = new Error("Not found")
             err.status = 404
-            reply.status(404).send(err)
+            throw err;
         });
 
         // main error handler
         this.app.setErrorHandler((error: Error & { status?: number }, _request: FastifyRequest, reply: FastifyReply) => {
-            debug(error)
-            reply.status(error.status || 500).view('error', {
+            let statusCode = error?.status || 500
+            if (statusCode === 500) {
+                debug(error)
+            }
+
+            let output = {
                 message: error.message || error,
                 error: error
-            })
+            }
+
+            reply.status(statusCode)
+
+            if (_request.raw.url?.startsWith('/api')) {
+                // json
+                reply.send(output)
+            } else {
+                // html
+                reply.view('error', output)
+            }
         });
     }
 }
