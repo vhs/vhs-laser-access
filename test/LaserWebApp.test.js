@@ -1,10 +1,24 @@
 'use strict'
 
-const testutil = require('./testutil')
 const { expect } = require('chai')
-const app = testutil.getApp()
+const { LaserWebApp } = require('../dist/LaserWebApp');
 
 describe('Core express tests', function () {
+  let lwapp = new LaserWebApp();
+  let app = lwapp.app;
+
+  // route that throws a 500
+  app.get('/mock500', ()=>{
+    throw('Unittest error')
+  })
+
+  // route throws a 500 on the api
+  app.get('/api/mock500', ()=>{
+    throw('Unittest error')
+  })
+
+  lwapp.init()
+
   it('checks for a homepage', async function () {
     let res = await app.inject().get('/')
     expect(res.statusCode).to.equal(200)
