@@ -12,6 +12,10 @@ export interface Configuration {
         clientName: string // "<clientName>"
         clientSecret: string // "<clientSecret>"
     },
+    jwt: {
+        cookieName: string // "vhsAuthJwt",
+        secret: string // "<jwtSecret>"
+    },
     port: number
 }
 

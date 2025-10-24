@@ -9,7 +9,14 @@ const debug = debugLib('laser:web')
 
 export async function RootController(instance: FastifyInstance, _: any) {
   // Root route
-  instance.get('/', async (_request: FastifyRequest, reply: FastifyReply) => {
+  instance.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      await request.jwtVerify();  // Verify the JWT token
+    } catch {
+      reply.redirect('/login')
+      return;
+    }
+    
     return reply.view('index', {
       title: 'VHS',
       status: manager.getStatus()

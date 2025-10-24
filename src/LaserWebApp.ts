@@ -6,8 +6,13 @@ import fastifyStatic from '@fastify/static'
 import pug from 'pug'
 import { RootController } from './controllers/RootController'
 import { ApiController } from './controllers/ApiController'
+import { LoginController } from './controllers/LoginController'
 import socketManager from 'fastify-socket';
 import { Server as IOServer } from 'socket.io';
+import { config } from './Configuration'
+import fastifyCookie from '@fastify/cookie'
+import fastifyJwt from '@fastify/jwt'
+import fastifyFormbody from '@fastify/formbody'
 
 const debug = debugLib('laser:web')
 
@@ -29,6 +34,23 @@ export class LaserWebApp {
     });
 
     async setup() {
+        if (!config.jwt.secret || !config.jwt.cookieName) {
+            throw new Error("Missing a JWT_SECRET in ./config.json");
+        }
+
+        this.app.register(fastifyFormbody) // login form
+        this.app.register(fastifyCookie) // jwt cookies
+        this.app.register(fastifyJwt, { // jwt support
+            secret: config.jwt.secret,
+            cookie: {
+                cookieName: config.jwt.cookieName,
+                signed: false
+            },
+            sign: {
+                expiresIn: '4h'
+            }
+        })
+
         // setup view engine
         await this.app.register(fastifyView, {
             engine: {
@@ -51,20 +73,23 @@ export class LaserWebApp {
         // register the /api handler
         await this.app.register(ApiController, { prefix: '/api' })
 
+        // register login routes
+        await this.app.register(LoginController, { jwtCookieName: config.jwt.cookieName })
+
         return this;
     }
 
     setupErrors() {
         // catch unhandled routes with 404
         this.app.setNotFoundHandler((_request: FastifyRequest, reply: FastifyReply) => {
-            let err: Error & { status?: number } = new Error("Not found")
-            err.status = 404
+            let err: Error & { statusCode?: number } = new Error("Not found")
+            err.statusCode = 404
             throw err;
         });
 
         // main error handler
-        this.app.setErrorHandler((error: Error & { status?: number }, _request: FastifyRequest, reply: FastifyReply) => {
-            let statusCode = error?.status || 500
+        this.app.setErrorHandler((error: Error & { statusCode?: number }, _request: FastifyRequest, reply: FastifyReply) => {
+            let statusCode = error?.statusCode || 500
             if (statusCode === 500) {
                 debug(error)
             }

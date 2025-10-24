@@ -1,0 +1,17 @@
+extends layout
+
+block content
+    .row
+        .col-md-10.col-md-offset-1
+            .panel.panel-default 
+                .panel-heading
+                    h1.panel-title Login
+                .panel-body
+                    if error
+                            h4.error= error
+                    form(action="/login", method="POST")
+                        p Sign in to #{permission_requested} access using your #[a(href='https://membership.vanhack.ca') NOMOS] credentials
+                        p: input#username(type="text", name="username", placeholder="Username or E-Mail address")
+                        p: input#password(type="password", name="password", placeholder="Password")
+                        input(type="submit", value="Login")
+                        p: sub If you are having trouble logging in, or need to reset your password, visit #[a(href='https://membership.vanhack.ca') membership.vanhack.ca].
