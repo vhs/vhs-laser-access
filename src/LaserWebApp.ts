@@ -4,8 +4,8 @@ import fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import fastifyView from '@fastify/view'
 import fastifyStatic from '@fastify/static'
 import pug from 'pug'
-import { LaserRootController } from './controllers/LaserRootController'
-import { LaserApiController } from './controllers/LaserApiController'
+import { RootController } from './controllers/RootController'
+import { ApiController } from './controllers/ApiController'
 import socketManager from 'fastify-socket';
 import { Server as IOServer } from 'socket.io';
 
@@ -46,10 +46,10 @@ export class LaserWebApp {
         await this.app.register(socketManager);
 
         // register the / handler, and setup event passing to socket.io
-        await this.app.register(LaserRootController)
+        await this.app.register(RootController)
 
         // register the /api handler
-        await this.app.register(LaserApiController, { prefix: '/api' })
+        await this.app.register(ApiController, { prefix: '/api' })
 
         return this;
     }

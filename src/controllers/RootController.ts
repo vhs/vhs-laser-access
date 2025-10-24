@@ -7,7 +7,7 @@ const debug = debugLib('laser:web')
 // this manages the '/' and '/api/activate' routes for the laser web interface
 // as well as propagating laser status updates to the frontend via Socket.io
 
-export async function LaserRootController(instance: FastifyInstance, _: any) {
+export async function RootController(instance: FastifyInstance, _: any) {
   // Root route
   instance.get('/', async (_request: FastifyRequest, reply: FastifyReply) => {
     return reply.view('index', {
