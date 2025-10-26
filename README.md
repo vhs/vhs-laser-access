@@ -47,6 +47,7 @@ This code is to be run on a raspberry pi at the hack space, with a "hat" board o
         - `npm -v`  verify that the npm install worked
         - `echo PATH="/usr/local/node/bin:\$PATH" >> ~/.profile` add node global binaries path to your profile
         - `source ~/.profile` reload .profile to activate the new PATH
+        - `sudo apt install nginx` install nginx to reverse proxy requests from port 80 to port 3000
     - `npm install -g corepack` install yarn, the project's preferred package manager (others probably work).
     - `corepack enable` enable yarn
 4.  checkout this repo, build, and run
@@ -63,6 +64,22 @@ This code is to be run on a raspberry pi at the hack space, with a "hat" board o
     - `pm2 startup` follow instructions - this persists pm2, so it starts on boot
     - `pm2 start dist/main.js --name laser` run the app
     - `pm2 save` make sure the app re-starts if the system is reset
+    - `sudo rm /etc/nginx/sites-available/default` remove default nginx config
+    - `sudo rm /etc/nginx/sites-enabled/default` remove default nginx config
+    - ```server{
+    listen 80;
+    server_name laser.vanhack.ca;
+    location / {
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $host;
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }``` create an nginx config for proxying from port 80 to port 3000 where the laser access app is running
+    - `sudo ln -s /etc/nginx/sites-available/laser-access.config /etc/nginx/sites-enabled/laser-access.config` enable the config
+}
+
 
 # Wiring
 
