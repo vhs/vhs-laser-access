@@ -21,7 +21,7 @@ describe('Core web app tests', async function () {
   lwapp.setupErrors();
 
   it('checks for a homepage', async function () {
-    let res = await app.inject().get('/')
+    let res = await app.inject().get('/') // fails because missing jwt
     expect(res.statusCode).to.equal(200)
   })
 
