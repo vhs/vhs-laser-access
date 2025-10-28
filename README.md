@@ -6,20 +6,20 @@ It is also used to control access to the laser. Access is handled by the members
 
 # Running the app
 
-1. install `node` (v22 or greater, ideally) and `yarn`.
+1. install `node`, v22 or greater ideally.
 2. create a `./config.json` file, see `./src/Configuration.ts` for the schema of this file.
-3. `yarn install` will install packages.
-4. `yarn build` will compile the typescript code into `./dist`.
-5. `yarn start` will compile the code and run it.
-6. `yarn test` will compile the code and test it.
+3. `npm install` will install packages.
+4. `npm run build` will compile the typescript code into `./dist`.
+5. `npm run start` will compile the code and run it.
+6. `npm run test` will compile the code and test it.
 7. visit `http://127.0.0.1:3000/` to view the running server
 
 ## Runtime options
 
-- `NODE_ENV=test yarn start` disable mqtt while running (see `./comms/MqttManager.ts`)
-- `yarn start -- --gpio-in` for testing, type 0+newline or 1+newline to toggle the main switch on and off (see `./src/hardware/MockGpio.ts`)
-- `yarn node ./dist/main.js` run without re-compiling first
-- `NODE_ENV=test yarn node ./dist/main.js --gpio-in` combine all of the above
+- `NODE_ENV=test npm start` disable mqtt while running (see `./comms/MqttManager.ts`)
+- `npm start -- --gpio-in` for testing, type 0+newline or 1+newline to toggle the main switch on and off (see `./src/hardware/MockGpio.ts`)
+- `npm node ./dist/main.js` run without re-compiling first
+- `NODE_ENV=test npm node ./dist/main.js --gpio-in` combine all of the above
 
 # MQTT for Maintanance Status
 
@@ -48,19 +48,15 @@ This code is to be run on a raspberry pi at the hack space, with a "hat" board o
         - `echo PATH="/usr/local/node/bin:\$PATH" >> ~/.profile` add node global binaries path to your profile
         - `source ~/.profile` reload .profile to activate the new PATH
         - `sudo apt install nginx` install nginx to reverse proxy requests from port 80 to port 3000
-    - `npm install -g corepack` install yarn, the project's preferred package manager (others probably work).
-    - `corepack enable` enable yarn
 4.  checkout this repo, build, and run
     - `git clone https://github.com/vhs/vhs-laser-access` checkout repo
     - `cd vhs-laser-access` enter repo
-    - `git fetch origin stripdown && git checkout stripdown` for now, we're using a version off the main branch
-    - `yarn install` install repo dependencies
+    - `git fetch origin stripdown-auth && git checkout stripdown-auth` for now, we're using a version off the main branch
+    - `npm install` install repo dependencies
     - setup a `config.json` file with the structure described in `src/Configuration.ts`
-    - `yarn start` run for the first time - visit it at `http://laser.local:3000/`
+    - `npm start` run for the first time - visit it at `http://laser.local:3000/`
 5. Persist the web app with pm2
-    - `yarn global add pm2` install `pm2`, which starts and restarts the webapp if it crashes or the system reboots
-    - `echo "export PATH=\"\$(yarn global bin):\$PATH\"" >> ~/.profile` add yarn global binary path to your PATH
-    - `source ~/.profile` reload PATH from .profile
+    - `sudo npm intall -g pm2` install `pm2`, which starts and restarts the webapp if it crashes or the system reboots
     - `pm2 startup` follow instructions - this persists pm2, so it starts on boot
     - `pm2 start dist/main.js --name laser` run the app
     - `pm2 save` make sure the app re-starts if the system is reset
