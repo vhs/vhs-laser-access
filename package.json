@@ -2,7 +2,6 @@
   "name": "laser-access",
   "version": "0.1.0",
   "description": "VHS Laser Access",
-  "packageManager": "yarn@1.22.22",
   "scripts": {
     "prepare": "wireit",
     "start": "wireit",
