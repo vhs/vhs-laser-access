@@ -5,7 +5,6 @@
   "scripts": {
     "prepare": "wireit",
     "start": "wireit",
-    "watch": "wireit",
     "test": "wireit",
     "lint": "wireit",
     "build": "wireit"
@@ -27,7 +26,6 @@
     "promise": "~6.1.0",
     "pug": "^3.0.3",
     "socket.io": "^4.8.1",
-    "supervisor": "~0.6.0",
     "underscore": "^1.8.2"
   },
   "devDependencies": {
@@ -77,16 +75,8 @@
     "lint": {
       "command": "jshint --reporter=node_modules/jshint-stylish src"
     },
-    "watch": {
-      "command": "supervisor dist/main.js",
-      "service": true,
-      "dependencies": [
-        "prepare",
-        "build"
-      ]
-    },
     "start": {
-      "command": "supervisor dist/main.js",
+      "command": "node dist/main.js",
       "service": true,
       "dependencies": [
         "prepare",
