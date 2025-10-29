@@ -34,7 +34,7 @@ export async function RootController(instance: FastifyInstance, _: any) {
   })
 
   manager.on('access', (event: LaserStatusEvent) => {
-    debug('New event from access ' + event.id)
+    debug('New event from access ' + event)
     instance.io.emit('access', event)
   })
 

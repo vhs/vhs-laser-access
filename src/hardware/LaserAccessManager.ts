@@ -11,15 +11,17 @@ import { mqttManager } from '../comms/MqttManager'
 
 let Gpio: typeof RealGpio | typeof MockGpio
 
+const debug = debugLib("laser:accessmanager")
+
 // determine if we can use real GPIOs or need to fallback to mock
 try {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const testGpio = new RealGpio(gpios.GPIO_LASER, 'out') // the only way to know if real gpios are available is to try
   Gpio = RealGpio
-  debugLib('Starting with real GPIOs')
-} catch (_err) {
+  debug('Starting with real GPIOs')
+} catch (err) {
   Gpio = MockGpio
-  debugLib('Starting with mocked GPIOs')
+  debug('Starting with mocked GPIOs', err)
 }
 
 export interface LaserStatusEvent {
@@ -105,32 +107,33 @@ class LaserAccessManager {
     if (!this.pins.chiller.readSync()) {
       return Promise.reject('Chiller is not running')
     }
+
     if (!this.pins.blower.readSync()) {
       return Promise.reject('Blower is not running')
     }
 
-    debugLib('Laser started')
+    debug('Laser started')
     this.state.laserWasStarted = true
     this.emitter.emit('laser', { id: 'laserStarted', name: 'Laser Started' })
 
     this.sendAPILaserUpdate('on')
       .then(function () {
-        debugLib('updated api - startup')
+        debug('updated api - startup')
       })
       .catch(function () {
-        debugLib('error updating api - startup')
+        debug('error updating api - startup')
       })
     return this.pins.laser.write(ON)
   }
 
   public shutdownLaser() {
-    debugLib('Laser shutdown')
+    debug('Laser shutdown')
     this.sendAPILaserUpdate('off')
       .then(function () {
-        debugLib('updated api - shutdown')
+        debug('updated api - shutdown')
       })
       .catch(function () {
-        debugLib('error updating api - shutdown')
+        debug('error updating api - shutdown')
       })
     this.state.laserWasStarted = false
     this.emitter.emit('laser', { id: 'laserShutdown', name: 'Laser Shutdown' })
@@ -138,7 +141,7 @@ class LaserAccessManager {
   }
 
   public startBlower() {
-    debugLib('Blower started')
+    debug('Blower started')
     this.emitter.emit('laser', { id: 'blowerStarted', name: 'Blower Started' })
     return this.pins.blower.write(ON)
   }
@@ -147,13 +150,13 @@ class LaserAccessManager {
     if (this.pins.laser.readSync() === ON) {
       return Promise.reject('Laser is running, will not shutdown blower')
     }
-    debugLib('Blower shutdown')
+    debug('Blower shutdown')
     this.emitter.emit('laser', { id: 'blowerShutdown', name: 'Blower Shutdown' })
     return this.pins.blower.write(OFF)
   }
 
   public startChiller() {
-    debugLib('Chiller started')
+    debug('Chiller started')
     this.emitter.emit('laser', {
       id: 'chillerStarted',
       name: 'Chiller/Compressor Started'
@@ -165,7 +168,7 @@ class LaserAccessManager {
     if (this.pins.laser.readSync() === ON) {
       return Promise.reject('Laser is running, will not shutdown chiller')
     }
-    debugLib('Chiller shutdown')
+    debug('Chiller shutdown')
     this.state.chillerRunning = false
     this.emitter.emit('laser', {
       id: 'chillerShutdown',
@@ -220,7 +223,7 @@ class LaserAccessManager {
       }
 
       if (this.state.chillerRunning) {
-        debugLib('Chiller was already running, starting laser and blower immediately')
+        debug('Chiller was already running, starting laser and blower immediately')
         return startLaserAndBlower()
       }
 
@@ -230,7 +233,7 @@ class LaserAccessManager {
       this.startChiller().then(() => {
         this.startTimers.startup = null
         if (this.startTimers.abortStartup) {
-          debugLib('Startup aborted')
+          debug('Startup aborted')
           resolve('Startup aborted')
         } else {
           this.state.chillerRunning = true
@@ -242,7 +245,7 @@ class LaserAccessManager {
 
   public shutdownAll(): Promise<any> | void {
     if (this.startTimers.shutdown && !this.startTimers.abortShutdown) {
-      debugLib("Shutdown requested but it's already in progress")
+      debug("Shutdown requested but it's already in progress")
       return
     }
     this.startTimers.abortShutdown = false
@@ -276,7 +279,7 @@ class LaserAccessManager {
   }
 
   public grantAccess() {
-    debugLib('Grant access request')
+    debug('Grant access request')
     this.state.authorized = true
     this.emitter.emit('access', 'access granted')
     if (this.disableAccessTimer) {
