@@ -2,11 +2,17 @@
 
 const { expect } = require('chai')
 const { LaserWebApp } = require('../dist/LaserWebApp');
+const { config } = require('../dist/Configuration');
 
 describe('Core web app tests', async function () {
   // setup app
   let lwapp = await new LaserWebApp().setup();
   let app = lwapp.app;
+
+  let jwt = app.jwt.sign({
+    userId: 123,
+    permission: 'laser'
+  })
 
   // route that throws a 500
   app.get('/mock500', () => {
@@ -20,8 +26,13 @@ describe('Core web app tests', async function () {
   // must be done AFTER adding the mock500 routes, for some reason
   lwapp.setupErrors();
 
-  it('checks for a homepage', async function () {
+  it('checks for auth', async function () {
     let res = await app.inject().get('/') // fails because missing jwt
+    expect(res.statusCode).to.equal(302) // redirect to /login
+  })
+
+  it('checks for working auth', async function () {
+    let res = await app.inject().headers({ cookie: `${config.jwt.cookieName}=${jwt}`}).get('/') // fails because missing jwt
     expect(res.statusCode).to.equal(200)
   })
 
