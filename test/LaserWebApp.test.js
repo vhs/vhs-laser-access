@@ -9,6 +9,7 @@ describe('Core web app tests', async function () {
   let lwapp = await new LaserWebApp().setup();
   let app = lwapp.app;
 
+  // generate a jwt for doing authenticated requests in tests
   let jwt = app.jwt.sign({
     userId: 123,
     permission: 'laser'
@@ -32,7 +33,7 @@ describe('Core web app tests', async function () {
   })
 
   it('checks for working auth', async function () {
-    let res = await app.inject().headers({ cookie: `${config.jwt.cookieName}=${jwt}`}).get('/') // fails because missing jwt
+    let res = await app.inject().headers({ cookie: `${config.jwt.cookieName}=${jwt}`}).get('/')
     expect(res.statusCode).to.equal(200)
   })
 
