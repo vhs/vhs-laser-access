@@ -5,26 +5,21 @@ const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const sinon = require('sinon')
 
-const laserAccess = require('../laserAccess')
+const { manager, LEDs } = require('../dist/hardware/LaserAccessManager')
+const mockgpio = require('../dist/hardware/MockGpio')
+const { gpios, ON, OFF } = require("../dist/hardware/GpiosConstants");
 
-const mockgpio = require('./mock-gpio')
-
-let gpios = laserAccess.gpios
-
-const ON = 1
-const OFF = 0
-
-chai.use(chaiAsPromised)
+chai.use(chaiAsPromised);
+chai.should();
 
 describe('Laser startup and shutdown', function () {
   const state = mockgpio.state
   let clock
 
   before(function () {
-    gpios = laserAccess.gpios
-    state[gpios.GPIO_BLOWER] = 0
-    state[gpios.GPIO_CHILLER] = 0
-    state[gpios.GPIO_LASER] = 0
+    state[gpios.GPIO_BLOWER] = OFF
+    state[gpios.GPIO_CHILLER] = OFF
+    state[gpios.GPIO_LASER] = OFF
     clock = sinon.useFakeTimers()
   })
 
@@ -33,86 +28,87 @@ describe('Laser startup and shutdown', function () {
   })
 
   it("won't let you start the laser when the chiller is not running", function () {
-    return laserAccess.startLaser().should.be.rejected
+    return manager.startLaser().should.be.rejected
   })
 
   it("won't let you start the laser when the chiller is not running", function () {
-    return laserAccess.startChiller().then(function () {
-      return laserAccess.startLaser().should.be.rejected
+    return manager.startChiller().then(function () {
+      return manager.startLaser().should.be.rejected
     })
   })
 
   it('will now let you start the laser when the blower is running', function () {
-    return laserAccess.startBlower().then(function () {
-      return laserAccess.startLaser().should.be.fulfilled
+    return manager.startBlower().then(function () {
+      return manager.startLaser().should.be.fulfilled
     })
   })
 
   it('will never let you shutdown the blower if the laser is running', function () {
-    return laserAccess.shutdownBlower().should.be.rejected
+    return manager.shutdownBlower().should.be.rejected
   })
 
   it('will never let you shutdown the chiller if the laser is running', function () {
-    return laserAccess.shutdownChiller().should.be.rejected
+    return manager.shutdownChiller().should.be.rejected
   })
 
   it('will now shutdown the laser', function () {
-    return laserAccess.shutdownLaser().should.be.fulfilled
+    return manager.shutdownLaser().should.be.fulfilled
   })
 
   it('will now shutdown the blower', function () {
-    return laserAccess.shutdownBlower().should.be.fulfilled
+    return manager.shutdownBlower().should.be.fulfilled
   })
 
   it('will now shutdown the chiller', function () {
-    return laserAccess.shutdownChiller().should.be.fulfilled
+    return manager.shutdownChiller().should.be.fulfilled
   })
 
   it('resets the state', function () {
-    state[gpios.GPIO_BLOWER] = 0
-    state[gpios.GPIO_CHILLER] = 0
-    state[gpios.GPIO_LASER] = 0
+    state[gpios.GPIO_BLOWER] = OFF
+    state[gpios.GPIO_CHILLER] = OFF
+    state[gpios.GPIO_LASER] = OFF
   })
 
   it('turns on the main switch but access has not been granted yet', function () {
-    const promise = laserAccess.startAll().should.eventually.be.rejected
+    const promise = manager.startAll().should.eventually.be.rejected
     clock.tick(45 * 1000)
     return promise
   })
 
   it('grants access to the laser', function () {
-    laserAccess.grantAccess()
+    manager.grantAccess()
 
     //Grant again, should replace the existing timer;
-    laserAccess.grantAccess()
+    manager.grantAccess()
   })
 
   it('turns on the main switch, only the chiller turns on', function () {
-    sinon.spy(laserAccess.LEDs.green, 'blink')
-    laserAccess.startAll()
-    laserAccess.getStatus().should.have.property('id', 'starting')
+    sinon.spy(LEDs.green, 'blink')
+    manager.startAll()
+    manager.getStatus().should.have.property('id', 'starting')
     state.should.have.property(gpios.GPIO_CHILLER, ON)
-    laserAccess.LEDs.green.blink.should.have.property('calledOnce', true)
-    laserAccess.LEDs.green.blink.restore()
+    LEDs.green.blink.should.have.property('calledOnce', true)
+    LEDs.green.blink.restore()
   })
 
-  it('turns on the laser and blower after 45 seconds', function () {
-    sinon.spy(laserAccess.LEDs.green, 'enable')
-    state.should.have.property(gpios.GPIO_LASER, OFF)
-    state.should.have.property(gpios.GPIO_BLOWER, OFF)
-    laserAccess.LEDs.green.enable.should.have.property('calledOnce', false)
-    clock.tick(45 * 1000)
-    state.should.have.property(gpios.GPIO_CHILLER, ON)
-    state.should.have.property(gpios.GPIO_LASER, ON)
-    state.should.have.property(gpios.GPIO_BLOWER, ON)
-    laserAccess.getStatus().should.have.property('id', 'ready')
-    laserAccess.LEDs.green.enable.should.have.property('calledOnce', true)
-    laserAccess.LEDs.green.enable.restore()
-  })
+  // it('turns on the laser and blower after 45 seconds', function () {
+  //   // need for this test was eliminated here: https://github.com/vhs/vhs-laser-access/commit/11ae1cd31cdcf21dda93ddc0e1575825e9a73d9a
+  //   sinon.spy(laserAccess.LEDs.green, 'enable')
+  //   state.should.have.property(gpios.GPIO_LASER, OFF)
+  //   state.should.have.property(gpios.GPIO_BLOWER, OFF)
+  //   laserAccess.LEDs.green.enable.should.have.property('calledOnce', false)
+  //   clock.tick(45 * 1000)
+  //   state.should.have.property(gpios.GPIO_CHILLER, ON)
+  //   state.should.have.property(gpios.GPIO_LASER, ON)
+  //   state.should.have.property(gpios.GPIO_BLOWER, ON)
+  //   laserAccess.getStatus().should.have.property('id', 'ready')
+  //   laserAccess.LEDs.green.enable.should.have.property('calledOnce', true)
+  //   laserAccess.LEDs.green.enable.restore()
+  // })
 
   it('turns off the main switch, only the laser turns off', function () {
-    laserAccess.shutdownAll()
-    laserAccess.getStatus().should.have.property('id', 'shuttingDown')
+    manager.shutdownAll()
+    manager.getStatus().should.have.property('id', 'shuttingDown')
     state.should.have.property(gpios.GPIO_LASER, OFF)
     state.should.have.property(gpios.GPIO_CHILLER, ON)
     state.should.have.property(gpios.GPIO_BLOWER, ON)
@@ -124,16 +120,16 @@ describe('Laser startup and shutdown', function () {
     state.should.have.property(gpios.GPIO_CHILLER, ON)
     state.should.have.property(gpios.GPIO_BLOWER, ON)
     clock.tick(3 * 60 * 1000 + ON)
-    laserAccess.getStatus().should.have.property('id', 'shutdown')
+    manager.getStatus().should.have.property('id', 'shutdown')
     state.should.have.property(gpios.GPIO_LASER, OFF)
     state.should.have.property(gpios.GPIO_CHILLER, OFF)
     state.should.have.property(gpios.GPIO_BLOWER, OFF)
   })
 
   it('turns on the main switch', function () {
-    laserAccess.grantAccess()
-    laserAccess.startAll()
-    laserAccess.getStatus().should.have.property('id', 'starting')
+    manager.grantAccess()
+    manager.startAll()
+    manager.getStatus().should.have.property('id', 'starting')
     state.should.have.property(gpios.GPIO_LASER, OFF)
     state.should.have.property(gpios.GPIO_CHILLER, ON)
     state.should.have.property(gpios.GPIO_BLOWER, OFF)
@@ -141,26 +137,26 @@ describe('Laser startup and shutdown', function () {
 
   it('turns off the main switch before the laser starts', function () {
     clock.tick(30 * 1000)
-    laserAccess.shutdownAll()
-    laserAccess.getStatus().should.have.property('id', 'shutdown')
+    manager.shutdownAll()
+    manager.getStatus().should.have.property('id', 'shutdown')
     state.should.have.property(gpios.GPIO_LASER, OFF)
     state.should.have.property(gpios.GPIO_CHILLER, OFF)
     state.should.have.property(gpios.GPIO_BLOWER, OFF)
     clock.tick(5 * 60 * 1000 + ON)
     //Should still stay off
-    laserAccess.getStatus().should.have.property('id', 'shutdown')
+    manager.getStatus().should.have.property('id', 'shutdown')
     state.should.have.property(gpios.GPIO_LASER, OFF)
     state.should.have.property(gpios.GPIO_CHILLER, OFF)
     state.should.have.property(gpios.GPIO_BLOWER, OFF)
   })
 
   it('turns the switch on again, only laser should start', function () {
-    laserAccess.grantAccess()
+    manager.grantAccess()
     state.should.have.property(gpios.GPIO_LASER, OFF)
     state.should.have.property(gpios.GPIO_CHILLER, OFF)
     state.should.have.property(gpios.GPIO_BLOWER, OFF)
-    laserAccess.startAll()
-    laserAccess.getStatus().should.have.property('id', 'starting')
+    manager.startAll()
+    manager.getStatus().should.have.property('id', 'starting')
     state.should.have.property(gpios.GPIO_LASER, OFF)
     state.should.have.property(gpios.GPIO_CHILLER, ON)
     state.should.have.property(gpios.GPIO_BLOWER, OFF)
@@ -171,34 +167,34 @@ describe('Laser startup and shutdown', function () {
     state.should.have.property(gpios.GPIO_LASER, ON)
     state.should.have.property(gpios.GPIO_CHILLER, ON)
     state.should.have.property(gpios.GPIO_BLOWER, ON)
-    laserAccess.getStatus().should.have.property('id', 'ready')
-    laserAccess.shutdownAll()
+    manager.getStatus().should.have.property('id', 'ready')
+    manager.shutdownAll()
     state.should.have.property(gpios.GPIO_LASER, OFF)
     state.should.have.property(gpios.GPIO_CHILLER, ON)
     state.should.have.property(gpios.GPIO_BLOWER, ON)
-    laserAccess.getStatus().should.have.property('id', 'shuttingDown')
+    manager.getStatus().should.have.property('id', 'shuttingDown')
   })
 
   it('turns the switch back on while shutting down, should start right away', function () {
     clock.tick(2 * 60 * 1000)
-    laserAccess.grantAccess()
-    laserAccess.startAll()
+    manager.grantAccess()
+    manager.startAll()
     state.should.have.property(gpios.GPIO_LASER, ON)
     state.should.have.property(gpios.GPIO_CHILLER, ON)
     state.should.have.property(gpios.GPIO_BLOWER, ON)
-    laserAccess.getStatus().should.have.property('id', 'ready')
+    manager.getStatus().should.have.property('id', 'ready')
   })
 
   it('should not be turned off after 5 min', function () {
     clock.tick(5 * 60 * 1000)
-    laserAccess.getStatus().should.have.property('id', 'ready')
+    manager.getStatus().should.have.property('id', 'ready')
     state.should.have.property(gpios.GPIO_LASER, ON)
     state.should.have.property(gpios.GPIO_CHILLER, ON)
     state.should.have.property(gpios.GPIO_BLOWER, ON)
   })
 
   it('shuts down but tries to toggle the switch when there is no access', function () {
-    laserAccess.shutdownAll()
+    manager.shutdownAll()
     state.should.have.property(gpios.GPIO_LASER, OFF)
     state.should.have.property(gpios.GPIO_CHILLER, ON)
     state.should.have.property(gpios.GPIO_BLOWER, ON)
@@ -206,8 +202,8 @@ describe('Laser startup and shutdown', function () {
 
   it('tries to start without success then shutsdown', function () {
     clock.tick(2 * 60 * 1000)
-    laserAccess.startAll().should.eventually.be.rejected //Note this should not change anything, no access granted
-    laserAccess.shutdownAll()
+    manager.startAll().should.eventually.be.rejected //Note this should not change anything, no access granted
+    manager.shutdownAll()
     clock.tick(30 * 1000)
     state.should.have.property(gpios.GPIO_LASER, OFF)
     state.should.have.property(gpios.GPIO_CHILLER, ON)
@@ -223,8 +219,8 @@ describe('Laser switch testing', function () {
   let startAllStub, shutdownAllStub, clock
 
   before('it stubs out start and shutown for the switch tests', function () {
-    startAllStub = sinon.stub(laserAccess, 'startAll')
-    shutdownAllStub = sinon.stub(laserAccess, 'shutdownAll')
+    startAllStub = sinon.stub(manager, 'startAll')
+    shutdownAllStub = sinon.stub(manager, 'shutdownAll')
     clock = sinon.useFakeTimers()
   })
 
@@ -266,8 +262,8 @@ describe('Status LED tests', function () {
   let clock
 
   before(function () {
-    state[gpios.GPIO_LED_GREEN] = 0
-    state[gpios.GPIO_LED_RED] = 0
+    state[gpios.GPIO_LED_GREEN] = OFF
+    state[gpios.GPIO_LED_RED] = OFF
     clock = sinon.useFakeTimers()
   })
 
@@ -277,24 +273,24 @@ describe('Status LED tests', function () {
 
   it('turns on a green LED', function () {
     state.should.have.property(gpios.GPIO_LED_GREEN, OFF)
-    return laserAccess.LEDs.green.enable().then(function () {
+    return LEDs.green.enable().then(function () {
       state.should.have.property(gpios.GPIO_LED_GREEN, ON)
     })
   })
 
   it('turns off the green LED', function () {
     state.should.have.property(gpios.GPIO_LED_GREEN, ON)
-    return laserAccess.LEDs.green.disable().then(function () {
+    return LEDs.green.disable().then(function () {
       state.should.have.property(gpios.GPIO_LED_GREEN, OFF)
     })
   })
 
   it('toggles the green LED', function () {
-    return laserAccess.LEDs.green
+    return LEDs.green
       .toggle()
       .then(function () {
         state.should.have.property(gpios.GPIO_LED_GREEN, ON)
-        return laserAccess.LEDs.green.toggle()
+        return LEDs.green.toggle()
       })
       .then(function () {
         state.should.have.property(gpios.GPIO_LED_GREEN, OFF)
@@ -302,7 +298,7 @@ describe('Status LED tests', function () {
   })
 
   it('starts blinking the red LED', function () {
-    return laserAccess.LEDs.red.blink(300).then(function () {
+    return LEDs.red.blink(300).then(function () {
       state.should.have.property(gpios.GPIO_LED_RED, ON)
       clock.tick(300)
       state.should.have.property(gpios.GPIO_LED_RED, OFF)
@@ -313,7 +309,7 @@ describe('Status LED tests', function () {
 
   it('starts blinking the red LED again, should keep blinking', function () {
     clock.tick(300)
-    return laserAccess.LEDs.red.blink(300).then(function () {
+    return LEDs.red.blink(300).then(function () {
       state.should.have.property(gpios.GPIO_LED_RED, OFF)
       clock.tick(300)
       state.should.have.property(gpios.GPIO_LED_RED, ON)
@@ -323,7 +319,7 @@ describe('Status LED tests', function () {
   })
 
   it('stops blinking the red LED', function () {
-    return laserAccess.LEDs.red.disable().then(function () {
+    return LEDs.red.disable().then(function () {
       state.should.have.property(gpios.GPIO_LED_RED, OFF)
       clock.tick(300)
       state.should.have.property(gpios.GPIO_LED_RED, OFF)
@@ -331,7 +327,7 @@ describe('Status LED tests', function () {
   })
 
   it('starts blinking the red LED yet again', function () {
-    return laserAccess.LEDs.red.blink(300).then(function () {
+    return LEDs.red.blink(300).then(function () {
       state.should.have.property(gpios.GPIO_LED_RED, ON)
       clock.tick(300)
       state.should.have.property(gpios.GPIO_LED_RED, OFF)

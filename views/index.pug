@@ -1,0 +1,22 @@
+extends layout
+
+block content
+  .row
+    .col-md-10.col-md-offset-1
+      h1 Laser
+        small.pull-right pew pew pew
+      .panel.panel-default
+        .panel-heading
+          h2.panel-title.pull-right Status: {{ status }}
+          h2.panel-title Laser
+        .panel-body
+          div(ng-show='activated')
+            .alert.alert-success(role='alert') Laser switch is unlocked
+          .row(ng-hide='activated')
+            .col-xs-12.col-sm-4.col-sm-offset-4
+              button#activate.btn.btn-danger.col-xs-12(
+                ng-click='activate()'
+              ) Unlock Switch
+        .panel-footer 
+          p.text-right
+            a(href='/login/out') Logout

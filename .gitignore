@@ -9,3 +9,6 @@ public/components/**/
 public/components/**/*
 !public/components/
 .wireit
+.nyc_output/
+dist/
+

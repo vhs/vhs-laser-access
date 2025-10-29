@@ -1,0 +1,29 @@
+extends layout
+
+block content
+    style.
+        input {
+            width: 100%;
+        }
+        .error {
+            color: red;
+        }
+        .login-panel {
+            margin-top: 25%;
+        }
+    .row
+        .col-md-4.col-md-offset-4
+            .panel.panel-default.login-panel
+                .panel-heading
+                    if error 
+                        h1.error.panel-title= error 
+                    else
+                        h1.panel-title Login to access the laser
+                .panel-body
+                    form(action="/login", method="POST")
+                        p Sign in to access the laser using your #[a(href='https://membership.vanhack.ca') Nomos] credentials
+                        p: input#username.form-control(type="text", name="username", placeholder="Username or E-Mail address")
+                        p: input#password.form-control(type="password", name="password", placeholder="Password")
+                        input.btn.btn-success(type="submit", value="Login")
+                        p
+                        p If you are having trouble logging in, or need to reset your password, visit #[a(href='https://membership.vanhack.ca') membership.vanhack.ca].

@@ -4,7 +4,64 @@ Used to automate the startup and shutdown of the laser cutter and all of the dep
 
 It is also used to control access to the laser. Access is handled by the membership management application.
 
-## Wiring
+# Running the app
+
+1. install `node`, v22 or greater ideally.
+2. create a `./config.json` file, see `./src/Configuration.ts` for the schema of this file.
+3. `npm install` will install packages.
+4. `npm run build` will compile the typescript code into `./dist`.
+5. `npm run start` will compile the code and run it.
+6. `npm run test` will compile the code and test it.
+7. visit `http://127.0.0.1:3000/` to view the running server
+
+## Runtime options
+
+- `NODE_ENV=test npm start` disable mqtt while running (see `./comms/MqttManager.ts`)
+- `npm start -- --gpio-in` for testing, type 0+newline or 1+newline to toggle the main switch on and off (see `./src/hardware/MockGpio.ts`)
+- `npm node ./dist/main.js` run without re-compiling first
+- `NODE_ENV=test npm node ./dist/main.js --gpio-in` combine all of the above
+
+# MQTT for Maintanance Status
+
+This app will check for "ok" status over MQTT before allowing the laser switch to be unlocked. This status is set by LCC and gives the LCC a quick way to take the laser out of service whenever necessary.
+
+# Deploying to a raspberry pi
+
+This code is to be run on a raspberry pi at the hack space, with a "hat" board on it that provides the relays, switches, and other connections. Here are instructions for getting it running on a pi:
+
+1. Flash Raspbian to an SD card
+    - user laser passwork hacktheplanet
+2. Boot the pi from the sd card, and ssh to it or use keyboard+monitor.
+    - complete any setup you're prompted with.
+3. Install necessary software:
+    - `sudo apt update` update package lists
+    - `sudo apt install git vim` life without `git` and `vim` is no life at all.
+    - install node. Per instructions [here](https://gist.github.com/stonehippo/f4ef8446226101e8bed3e07a58ea512a) nodesource and the official nodejs builds don't work on a pi v1, so we have to use an unofficial build
+        - `wget https://unofficial-builds.nodejs.org/download/release/v22.19.0/node-v22.19.0-linux-armv6l.tar.gz` 
+        - `tar -xvf node-v22.19.0-linux-armv6l.tar.gz` unzip it
+        - `sudo mv node-vX.X.X-linux-armv6l /usr/local/node` put it in place
+        - `cd /usr/bin`
+        - `sudo ln -s /usr/local/node/bin/node node`
+        - `sudo ln -s /usr/local/node/bin/npm npm`
+        - `node -v` verify that the Node.js install worked
+        - `npm -v`  verify that the npm install worked
+        - `echo PATH="/usr/local/node/bin:\$PATH" >> ~/.profile` add node global binaries path to your profile
+        - `source ~/.profile` reload .profile to activate the new PATH
+4.  checkout this repo, build, and run
+    - `git clone https://github.com/vhs/vhs-laser-access` checkout repo
+    - `cd vhs-laser-access` enter repo
+    - `git fetch origin stripdown-auth && git checkout stripdown-auth` for now, we're using a version off the main branch
+    - `npm install` install repo dependencies
+    - setup a `config.json` file with the structure described in `src/Configuration.ts`
+    - `npm start` run for the first time - visit it at `http://laser.local:3000/`
+5. Persist the web app with pm2
+    - `sudo npm intall -g pm2` install `pm2`, which starts and restarts the webapp if it crashes or the system reboots
+    - `pm2 startup` follow instructions - this persists pm2, so it starts on boot
+    - `pm2 start dist/main.js --name laser` run the app
+    - `pm2 save` make sure the app re-starts if the system is reset
+
+
+# Wiring
 
 - Chiller Relay - GPIO17, pin 11 - Green Wire Pin 4
 - Ventilation Relay - GPIO27 pin 13 - Orange Wire Pin 5
@@ -22,53 +79,3 @@ The following pins are used for NFC but it's currently not enabled.
 - NFC CLK GPIO11 pin 23
 - NFC CE0 GPIO08 pin 24
 - NFC CE1 GPIO07 pin 26
-
-## Installation [Ubuntu Installation below]
-
-Install node.js, one way is with this arm package
-
-    wget http://node-arm.herokuapp.com/node_latest_armhf.deb
-    sudo dpkg -i node_latest_armhf.deb
-
-After node.js is installed from the root of the project run:
-
-    npm install
-
-When installing on the production device you don't need to install the dev dependencies.
-
-    npm install --production
-
-Installing on a RPi does take a while.
-
-## Ubuntu installation
-
-     https://nodejs.org/en/download/package-manager/
-
-## Config
-
-Start by adding a new config.json file, see config.json.sample for an example.
-
-## OAuth Access
-
-When setting up OAuth providers, the callback set in the provider should be http://<host>/oauth/(github|google|slack)/callback.
-
-For google callbacks you cannot use internal IP addresses however you can use a host name with a valid domain name regardless if
-the IP resolves to an internal or external address.
-
-## Check Maintanance Status Over MQTT
-
-Will check for ok status over MQTT before allowing the laser switch to be unlocked. This status is set by LCC and gives the LCC a quick way to take the laser out of service whenever necessary.
-
-## Testing
-
-If dev dependencies are installed you can run all test cases with
-
-    npm test
-
-## Running
-
-To set the port set the environment variable PORT to whatever port you want to listen to, by default it's 3000
-
-    npm start
-
-To enable debug logging then set the environment variable DEBUG to laser:\* to log all laser related events.
