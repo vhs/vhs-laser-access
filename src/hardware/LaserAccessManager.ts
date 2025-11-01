@@ -280,7 +280,7 @@ class LaserAccessManager {
       await this.shutdownLaser()
       await this.pins.LEDs.green.blink(300)
 
-      await new Promise((resolve, reject)=>{
+      await new Promise((resolve, reject) => {
         this.startTimers.shutdown = setTimeout(() => {
           this.startTimers.shutdown = null
           if (this.startTimers.abortShutdown) {
@@ -292,44 +292,12 @@ class LaserAccessManager {
               .then(resolve)
           }
         }, 5 * 60 * 1000)
-      }).catch((err)=>{
+      }).catch((err) => {
         console.log(err)
       })
 
       return;
-      return new Promise((resolve, reject) => {
-        this.startTimers.shutdown = setTimeout(() => {
-          this.startTimers.shutdown = null
-          if (this.startTimers.abortShutdown) {
-            resolve('Shutdown aborted')
-          } else {
-            this.setStatus(Events.Status.Shutdown)
-            this.pins.LEDs.green.disable()
-            Promise.all([this.shutdownBlower(), this.shutdownChiller()])
-              .then(resolve)
-              .catch(reject)
-          }
-        }, 5 * 60 * 1000)
-      })
-
-      return new Promise((resolve, reject) => {
-        this.shutdownLaser()
-          .then(() => this.pins.LEDs.green.blink(300))
-          .then(() => {
-            this.startTimers.shutdown = setTimeout(() => {
-              this.startTimers.shutdown = null
-              if (this.startTimers.abortShutdown) {
-                resolve('Shutdown aborted')
-              } else {
-                this.setStatus(Events.Status.Shutdown)
-                this.pins.LEDs.green.disable()
-                Promise.all([this.shutdownBlower(), this.shutdownChiller()])
-                  .then(resolve)
-                  .catch(reject)
-              }
-            }, 5 * 60 * 1000)
-          })
-      })
+      
     } else {
       this.startTimers.abortStartup = true
       this.pins.LEDs.green.disable()
