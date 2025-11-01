@@ -1,6 +1,6 @@
 import debugLib from 'debug'
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
-import { manager, LaserStatusEvent } from '../hardware/LaserAccessManager'
+import { manager, Dispatch } from '../hardware/LaserAccessManager'
 
 const debug = debugLib('laser:web')
 
@@ -28,17 +28,17 @@ export async function RootController(instance: FastifyInstance, _: any) {
     socket.emit('status', manager.getStatus())
   })
 
-  manager.on('laser', (event: LaserStatusEvent) => {
+  manager.on(Dispatch.Channel.Laser, (event: Dispatch.ReceivedEvent) => {
     debug('New event from laser ' + event.id)
     instance.io.emit('laser', event);
   })
 
-  manager.on('access', (event: LaserStatusEvent) => {
+  manager.on(Dispatch.Channel.Access, (event: Dispatch.ReceivedEvent) => {
     debug('New event from access ' + event)
     instance.io.emit('access', event)
   })
 
-  manager.on('status', (event: LaserStatusEvent) => {
+  manager.on(Dispatch.Channel.Status, (event: Dispatch.ReceivedEvent) => {
     debug('New event from status ' + event.id)
     instance.io.emit('status', event)
   })

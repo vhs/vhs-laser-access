@@ -3,7 +3,6 @@
 import debugLib from 'debug'
 import { LaserWebApp } from './LaserWebApp'
 import { config } from './Configuration'
-import { manager } from './hardware/LaserAccessManager'
 
 const debug = debugLib('laser:web')
 
@@ -27,9 +26,5 @@ async function start() {
     process.exit(1)
   }
 }
-
-manager.sendAPILaserUpdate("on").then((data)=>{
-  debug("sent api, response is ", data)
-})
 
 start()

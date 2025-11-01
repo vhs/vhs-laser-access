@@ -1,4 +1,4 @@
-import CryptoJS from 'crypto-js'
+
 import debugLib from 'debug'
 import { config } from '../Configuration'
 import { Led } from './Led'
@@ -25,15 +25,73 @@ try {
   debug('Starting with mocked GPIOs', err)
 }
 
-export interface LaserStatusEvent {
-    id: "shutdown" | "ready" | "starting" | "shuttingDown",
-    name: string
+type EventHardware = 'blower' | 'laser' | 'chiller';
+const HwEventMaker = (hardware: EventHardware) => {
+  return {
+    Started: { channel: 'laser', id: `${hardware}-started`, name: `${hardware} started` },
+    Shutdown: { channel: 'laser', id: `${hardware}-shutdown`, name: `${hardware} shutdown` }
+  }
 }
 
-const StatusShutdown: LaserStatusEvent = { id: 'shutdown', name: 'Shutdown' }
-const StatusReady: LaserStatusEvent = { id: 'ready', name: 'Ready' }
-const StatusStarting: LaserStatusEvent = { id: 'starting', name: 'Starting' }
-const StatusShuttingDown: LaserStatusEvent = { id: 'shuttingDown', name: 'Shutting Down' }
+const Events = {
+  // events about the state of the laser hardware, used for debugging
+  Hardware: {
+    Blower: HwEventMaker('blower'),
+    Chiller: HwEventMaker('chiller'),
+    Laser: HwEventMaker('laser')
+  },
+  // events about the overall status of the laser, shown to the user
+  Status: {
+    Shutdown: { channel: 'status', id: 'shutdown', name: 'Shutdown' },
+    Ready: { channel: 'status', id: 'ready', name: 'Ready' },
+    Starting: { channel: 'status', id: 'starting', name: 'Starting' },
+    ShuttingDown: { channel: 'status', id: 'shuttingDown', name: 'Shutting down' as string }
+  },
+  // events about access, not directly shown but sets the big button to green or red
+  Access: {
+    Granted: { channel: 'access', id: 'access-granted', name: 'Access granted' },
+    Pending: { channel: 'access', id: 'access-pending', name: 'Access pending' }
+  }
+}
+
+export namespace Dispatch {
+  export enum Channel {
+    Laser = 'laser', // hardware events
+    Status = 'status', // overall laser status events
+    Access = "access" // switch is locked or unlocked
+  }
+
+  // these are the events that we expect to receive
+  export interface OutgoingEvent {
+    id: string
+    name: string
+    channel: string
+  }
+
+  // these are the events we expect to emit
+  export interface ReceivedEvent {
+    name: string
+    id: string
+  }
+
+  export class Manager {
+    private emitter = new EventEmitter();
+
+    public emit(event: OutgoingEvent) {
+      this.emitter.emit(event.channel, { id: event.id, name: event.name })
+    }
+
+    public on(event: Channel, listener: (...args: any[]) => void) {
+      return this.emitter.on(event, listener)
+    }
+  }
+}
+
+function delay(delay: number) {
+    return new Promise(function(resolve) {
+        setTimeout(resolve, delay);
+    });
+}
 
 class LaserAccessManager {
   pins = {
@@ -47,14 +105,14 @@ class LaserAccessManager {
     }
   }
 
-  private emitter = new EventEmitter()
+  private dispatch = new Dispatch.Manager()
   private startTimers: any = {}
 
   private state = {
     laserWasStarted: false,
     chillerRunning: false,
     authorized: false,
-    status: StatusShutdown
+    status: Events.Status.Shutdown
   };
 
   private disableAccessTimer: any = null
@@ -68,9 +126,9 @@ class LaserAccessManager {
       clearTimeout(this.switchTimeout)
       this.switchTimeout = setTimeout(() => {
         if (this.mainSwitchOn()) {
-          void this.startAll()
+          this.startAll()
         } else {
-          void this.shutdownAll()
+          this.shutdownAll()
         }
       }, 500)
     })
@@ -87,7 +145,7 @@ class LaserAccessManager {
 
     debug('Laser started')
     this.state.laserWasStarted = true
-    this.emitter.emit('laser', { id: 'laserStarted', name: 'Laser Started' })
+    this.dispatch.emit(Events.Hardware.Laser.Started)
 
     VhsApi.statusUpdate('on')
       .then(function () {
@@ -101,21 +159,21 @@ class LaserAccessManager {
 
   public shutdownLaser() {
     debug('Laser shutdown')
-    VhsApi.statusUpdate('off')
-      .then(function () {
-        debug('updated api - shutdown')
-      })
-      .catch(function () {
-        debug('error updating api - shutdown')
-      })
+
+    VhsApi.statusUpdate('off').then(function () {
+      debug('updated api - shutdown')
+    }).catch(function () {
+      debug('error updating api - shutdown')
+    })
+
     this.state.laserWasStarted = false
-    this.emitter.emit('laser', { id: 'laserShutdown', name: 'Laser Shutdown' })
+    this.dispatch.emit(Events.Hardware.Laser.Shutdown)
     return this.pins.laser.write(OFF)
   }
 
   public startBlower() {
     debug('Blower started')
-    this.emitter.emit('laser', { id: 'blowerStarted', name: 'Blower Started' })
+    this.dispatch.emit(Events.Hardware.Blower.Started)
     return this.pins.blower.write(ON)
   }
 
@@ -124,16 +182,13 @@ class LaserAccessManager {
       return Promise.reject('Laser is running, will not shutdown blower')
     }
     debug('Blower shutdown')
-    this.emitter.emit('laser', { id: 'blowerShutdown', name: 'Blower Shutdown' })
+    this.dispatch.emit(Events.Hardware.Blower.Shutdown)
     return this.pins.blower.write(OFF)
   }
 
   public startChiller() {
     debug('Chiller started')
-    this.emitter.emit('laser', {
-      id: 'chillerStarted',
-      name: 'Chiller/Compressor Started'
-    })
+    this.dispatch.emit(Events.Hardware.Chiller.Started)
     return this.pins.chiller.write(ON)
   }
 
@@ -141,12 +196,12 @@ class LaserAccessManager {
     if (this.pins.laser.readSync() === ON) {
       return Promise.reject('Laser is running, will not shutdown chiller')
     }
+
     debug('Chiller shutdown')
+
     this.state.chillerRunning = false
-    this.emitter.emit('laser', {
-      id: 'chillerShutdown',
-      name: 'Chiller/Comperssor Shutdown'
-    })
+
+    this.dispatch.emit(Events.Hardware.Chiller.Shutdown)
     return this.pins.chiller.write(OFF)
   }
 
@@ -154,77 +209,109 @@ class LaserAccessManager {
     return this.pins.mainSwitch.readSync() === ON
   }
 
-  private setStatus(s: LaserStatusEvent) {
+  private setStatus(s: Dispatch.OutgoingEvent) {
     this.state.status = s
-    this.emitter.emit('status', s)
+    this.dispatch.emit(s)
   }
 
   public getStatus() {
     return this.state.status
   }
 
-  public startAll(): Promise<any> {
+  public async startAll(): Promise<any> {
     this.startTimers.abortStartup = false
 
-    return new Promise((resolve, reject) => {
-      if (!this.state.authorized) {
-        this.pins.LEDs.red.blink(150)
-        setTimeout(() => {
-          this.pins.LEDs.red.enable()
-        }, 2000)
-        return reject('Access Denied')
-      }
+    if (!this.state.authorized) {
+      this.pins.LEDs.red.blink(150)
+      setTimeout(() => {
+        this.pins.LEDs.red.enable()
+      }, 2000)
+      return Promise.reject('Access Denied')
+    }
 
-      if (mqttManager.maintenanceStatus !== 'ok') {
-        this.pins.LEDs.red.blink(150)
-        setTimeout(() => {
-          this.pins.LEDs.red.enable()
-        }, 2000)
-        return reject('Maintenance Overdue: Access Denied')
-      }
+    if (mqttManager.maintenanceStatus !== 'ok') {
+      this.pins.LEDs.red.blink(150)
+      setTimeout(() => {
+        this.pins.LEDs.red.enable()
+      }, 2000)
+      return Promise.reject('Maintenance Overdue: Access Denied')
+    }
 
-      const startLaserAndBlower = () => {
-        this.pins.LEDs.green.enable()
-        this.setStatus(StatusReady)
-        return Promise.all([this.startBlower(), this.startLaser()])
-          .then(resolve)
-          .catch(reject)
-      }
+    const startLaserAndBlower = () => {
+      this.pins.LEDs.green.enable()
+      this.setStatus(Events.Status.Ready)
+      return Promise.all([this.startBlower(), this.startLaser()])
+    }
 
-      if (this.startTimers.shutdown) {
-        this.startTimers.abortShutdown = true
-      }
+    if (this.startTimers.shutdown) {
+      this.startTimers.abortShutdown = true
+    }
 
-      if (this.state.chillerRunning) {
-        debug('Chiller was already running, starting laser and blower immediately')
-        return startLaserAndBlower()
-      }
+    if (this.state.chillerRunning) {
+      debug('Chiller was already running, starting laser and blower immediately')
+      return startLaserAndBlower()
+    }
 
-      this.pins.LEDs.green.blink(300)
-      this.setStatus(StatusStarting)
+    this.pins.LEDs.green.blink(300)
+    this.setStatus(Events.Status.Starting)
 
-      this.startChiller().then(() => {
-        this.startTimers.startup = null
-        if (this.startTimers.abortStartup) {
-          debug('Startup aborted')
-          resolve('Startup aborted')
-        } else {
-          this.state.chillerRunning = true
-          startLaserAndBlower()
-        }
-      })
-    })
+    await this.startChiller()
+
+    this.startTimers.startup = null
+    if (this.startTimers.abortStartup) {
+      debug('Startup aborted')
+      return Promise.resolve('Startup aborted')
+    }
+
+    this.state.chillerRunning = true
+    return startLaserAndBlower()
   }
 
-  public shutdownAll(): Promise<any> | void {
+  public async shutdownAll(): Promise<any> {
     if (this.startTimers.shutdown && !this.startTimers.abortShutdown) {
       debug("Shutdown requested but it's already in progress")
       return
     }
     this.startTimers.abortShutdown = false
-    this.setStatus(StatusShuttingDown)
+    this.setStatus(Events.Status.ShuttingDown)
 
     if (this.state.laserWasStarted) {
+      const fiveMin = 5 * 60 * 1000;
+      await this.shutdownLaser()
+      await this.pins.LEDs.green.blink(300)
+
+      await new Promise((resolve, reject)=>{
+        this.startTimers.shutdown = setTimeout(() => {
+          this.startTimers.shutdown = null
+          if (this.startTimers.abortShutdown) {
+            reject('Shutdown aborted')
+          } else {
+            this.setStatus(Events.Status.Shutdown)
+            this.pins.LEDs.green.disable()
+            return Promise.all([this.shutdownBlower(), this.shutdownChiller()])
+              .then(resolve)
+          }
+        }, 5 * 60 * 1000)
+      }).catch((err)=>{
+        console.log(err)
+      })
+
+      return;
+      return new Promise((resolve, reject) => {
+        this.startTimers.shutdown = setTimeout(() => {
+          this.startTimers.shutdown = null
+          if (this.startTimers.abortShutdown) {
+            resolve('Shutdown aborted')
+          } else {
+            this.setStatus(Events.Status.Shutdown)
+            this.pins.LEDs.green.disable()
+            Promise.all([this.shutdownBlower(), this.shutdownChiller()])
+              .then(resolve)
+              .catch(reject)
+          }
+        }, 5 * 60 * 1000)
+      })
+
       return new Promise((resolve, reject) => {
         this.shutdownLaser()
           .then(() => this.pins.LEDs.green.blink(300))
@@ -234,7 +321,7 @@ class LaserAccessManager {
               if (this.startTimers.abortShutdown) {
                 resolve('Shutdown aborted')
               } else {
-                this.setStatus(StatusShutdown)
+                this.setStatus(Events.Status.Shutdown)
                 this.pins.LEDs.green.disable()
                 Promise.all([this.shutdownBlower(), this.shutdownChiller()])
                   .then(resolve)
@@ -246,7 +333,7 @@ class LaserAccessManager {
     } else {
       this.startTimers.abortStartup = true
       this.pins.LEDs.green.disable()
-      this.setStatus(StatusShutdown)
+      this.setStatus(Events.Status.Shutdown)
       return Promise.all([this.shutdownLaser(), this.shutdownBlower(), this.shutdownChiller()])
     }
   }
@@ -254,19 +341,19 @@ class LaserAccessManager {
   public grantAccess() {
     debug('Grant access request')
     this.state.authorized = true
-    this.emitter.emit('access', 'access granted')
+    this.dispatch.emit(Events.Access.Granted)
     if (this.disableAccessTimer) {
       clearTimeout(this.disableAccessTimer)
     }
     this.disableAccessTimer = setTimeout(() => {
-      this.emitter.emit('access', 'awaiting access')
+      this.dispatch.emit(Events.Access.Pending)
       this.state.authorized = false
       this.disableAccessTimer = null
     }, 20000)
   }
 
-  public on(event: string, listener: (...args: any[]) => void) {
-    return this.emitter.on(event, listener)
+  public on(event: Dispatch.Channel, listener: (...args: any[]) => void) {
+    return this.dispatch.on(event, listener)
   }
 }
 

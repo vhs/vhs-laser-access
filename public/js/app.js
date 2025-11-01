@@ -14,9 +14,9 @@
     $scope.activated = false
     $scope.status = 'Not sure'
     socket.on('access', function (data) {
-      if (data === 'awaiting access') {
+      if (data.id === 'access-pending') {
         $scope.activated = false
-      } else if (data === 'access granted') {
+      } else if (data === 'access-granted') {
         $scope.activated = true
       }
       $scope.$apply()
