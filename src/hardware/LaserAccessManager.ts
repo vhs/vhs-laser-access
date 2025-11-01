@@ -8,6 +8,7 @@ import { Gpio as MockGpio } from './MockGpio';
 
 import { EventEmitter } from 'events'
 import { mqttManager } from '../comms/MqttManager'
+import { VhsApi } from '../comms/VhsApi'
 
 let Gpio: typeof RealGpio | typeof MockGpio
 
@@ -75,34 +76,6 @@ class LaserAccessManager {
     })
   }
 
-  // inform the API if the laser is currently on or off
-  private sendAPILaserUpdate(statusStr: string) {
-    const ts = Math.floor(Date.now() / 1000)
-    const requestURI = '/s/vhs/data/laser/update'
-
-    const formdata: any = {}
-    formdata.value = statusStr
-    formdata.ts = '' + ts
-    formdata.client = config.api.clientName
-
-    const jsonData = JSON.stringify(formdata)
-
-    const key = ts + jsonData + config.api.clientSecret
-
-    const hash = CryptoJS.HmacSHA256(jsonData, key)
-
-    const signedRequestUrl = config.api.baseUrl + requestURI + '?hash=' + hash
-
-    return fetch(signedRequestUrl, {
-      method: 'PUT',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: jsonData
-    }).then((response) => response.json())
-  }
-
   public startLaser() {
     if (!this.pins.chiller.readSync()) {
       return Promise.reject('Chiller is not running')
@@ -116,7 +89,7 @@ class LaserAccessManager {
     this.state.laserWasStarted = true
     this.emitter.emit('laser', { id: 'laserStarted', name: 'Laser Started' })
 
-    this.sendAPILaserUpdate('on')
+    VhsApi.statusUpdate('on')
       .then(function () {
         debug('updated api - startup')
       })
@@ -128,7 +101,7 @@ class LaserAccessManager {
 
   public shutdownLaser() {
     debug('Laser shutdown')
-    this.sendAPILaserUpdate('off')
+    VhsApi.statusUpdate('off')
       .then(function () {
         debug('updated api - shutdown')
       })
