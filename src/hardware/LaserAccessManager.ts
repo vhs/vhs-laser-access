@@ -87,12 +87,6 @@ export namespace Dispatch {
   }
 }
 
-function delay(delay: number) {
-    return new Promise(function(resolve) {
-        setTimeout(resolve, delay);
-    });
-}
-
 class LaserAccessManager {
   pins = {
     laser: new Gpio(gpios.GPIO_LASER, 'out'),
@@ -129,7 +123,6 @@ class LaserAccessManager {
     switchTimeout: undefined
   }
   
-
   constructor() {
     this.pins.LEDs.red.enable()
 
@@ -137,13 +130,15 @@ class LaserAccessManager {
     this.pins.mainSwitch.watch(() => {
       clearTimeout(this.timers.switchTimeout)
       this.timers.switchTimeout = setTimeout(() => {
-        if (this.mainSwitchOn()) {
+        if (this.pins.mainSwitch.readSync() === ON) {
           this.startAll()
         } else {
           this.shutdownAll()
         }
       }, 500)
-    })
+      // this can probably be replaced with `{ debounceTimeout: 500 }` or even 20, on the GPIO
+      // but right now that causes tests to fail, because mockgpio doesn't have debounce support
+     })
   }
 
   public startLaser() {
@@ -217,8 +212,10 @@ class LaserAccessManager {
     return this.pins.chiller.write(OFF)
   }
 
-  public mainSwitchOn() {
-    return this.pins.mainSwitch.readSync() === ON
+  private startLaserAndBlower () {
+    this.pins.LEDs.green.enable()
+    this.setStatus(Events.Status.Ready)
+    return Promise.all([this.startBlower(), this.startLaser()])
   }
 
   private setStatus(s: Dispatch.OutgoingEvent) {
@@ -249,19 +246,13 @@ class LaserAccessManager {
       return Promise.reject('Maintenance Overdue: Access Denied')
     }
 
-    const startLaserAndBlower = () => {
-      this.pins.LEDs.green.enable()
-      this.setStatus(Events.Status.Ready)
-      return Promise.all([this.startBlower(), this.startLaser()])
-    }
-
     if (this.timers.shutdown) {
       this.flags.abortShutdown = true
     }
 
     if (this.state.chillerRunning) {
       debug('Chiller was already running, starting laser and blower immediately')
-      return startLaserAndBlower()
+      return this.startLaserAndBlower()
     }
 
     this.pins.LEDs.green.blink(300)
@@ -275,7 +266,7 @@ class LaserAccessManager {
     }
 
     this.state.chillerRunning = true
-    return startLaserAndBlower()
+    return this.startLaserAndBlower()
   }
 
   public async shutdownAll(): Promise<any> {
@@ -304,7 +295,7 @@ class LaserAccessManager {
           }
         }, 5 * 60 * 1000)
       }).catch((err) => {
-        console.log(err)
+        debug(err)
       })
 
       return;
