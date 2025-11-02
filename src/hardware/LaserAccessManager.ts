@@ -1,6 +1,5 @@
 
 import debugLib from 'debug'
-import { config } from '../Configuration'
 import { Led } from './Led'
 import { gpios, ON, OFF } from './GpiosConstants'
 import { Gpio as RealGpio } from 'onoff';
@@ -276,7 +275,7 @@ class LaserAccessManager {
     if (this.state.laserWasStarted) {
       const fiveMin = 5 * 60 * 1000;
       await this.shutdownLaser()
-      await this.pins.LEDs.green.blink(300)
+      this.pins.LEDs.green.blink(300)
 
       await new Promise((resolve, reject) => {
         this.timers.shutdown = setTimeout(() => {
@@ -293,9 +292,6 @@ class LaserAccessManager {
       }).catch((err) => {
         debug(err)
       })
-
-      return;
-
     } else {
       this.flags.abortStartup = true
       this.pins.LEDs.green.disable()
@@ -308,7 +304,7 @@ class LaserAccessManager {
     debug('Grant access request')
     this.state.authorized = true
     this.dispatch.emit(Events.Access.Granted)
-    
+
     if (this.timers.disableAccess) {
       clearTimeout(this.timers.disableAccess)
     }
