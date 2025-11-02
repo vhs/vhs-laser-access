@@ -4,11 +4,13 @@ export class Led {
   gpio: any
   on: boolean
   blinkInterval: NodeJS.Timeout | null
+  stateChangeInterval: NodeJS.Timeout | null
 
   constructor(gpio: any) {
     this.gpio = gpio
     this.on = false
     this.blinkInterval = null
+    this.stateChangeInterval = null
   }
 
   enable(): Promise<any> {
@@ -43,5 +45,15 @@ export class Led {
       return this.gpio.write(ON)
     }
     return Promise.resolve()
+  }
+
+  enableAfter(delayMs: number) {
+    if (this.stateChangeInterval) {
+      clearInterval(this.stateChangeInterval);
+    }
+
+    this.stateChangeInterval = setTimeout(() => {
+        this.enable()
+      }, delayMs)
   }
 }

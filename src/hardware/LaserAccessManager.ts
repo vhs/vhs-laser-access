@@ -232,17 +232,13 @@ class LaserAccessManager {
 
     if (!this.state.authorized) {
       this.pins.LEDs.red.blink(150)
-      setTimeout(() => {
-        this.pins.LEDs.red.enable()
-      }, 2000)
+      this.pins.LEDs.red.enableAfter(2000)
       return Promise.reject('Access Denied')
     }
 
     if (mqttManager.maintenanceStatus !== 'ok') {
       this.pins.LEDs.red.blink(150)
-      setTimeout(() => {
-        this.pins.LEDs.red.enable()
-      }, 2000)
+      this.pins.LEDs.red.enableAfter(2000)
       return Promise.reject('Maintenance Overdue: Access Denied')
     }
 
@@ -293,7 +289,7 @@ class LaserAccessManager {
             return Promise.all([this.shutdownBlower(), this.shutdownChiller()])
               .then(resolve)
           }
-        }, 5 * 60 * 1000)
+        }, fiveMin)
       }).catch((err) => {
         debug(err)
       })
@@ -312,9 +308,11 @@ class LaserAccessManager {
     debug('Grant access request')
     this.state.authorized = true
     this.dispatch.emit(Events.Access.Granted)
+    
     if (this.timers.disableAccess) {
       clearTimeout(this.timers.disableAccess)
     }
+
     this.timers.disableAccess = setTimeout(() => {
       this.dispatch.emit(Events.Access.Pending)
       this.state.authorized = false
