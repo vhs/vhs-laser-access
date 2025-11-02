@@ -106,7 +106,6 @@ class LaserAccessManager {
   }
 
   private dispatch = new Dispatch.Manager()
-  private startTimers: any = {}
 
   private state = {
     laserWasStarted: false,
@@ -115,16 +114,29 @@ class LaserAccessManager {
     status: Events.Status.Shutdown
   };
 
-  private disableAccessTimer: any = null
-  private switchTimeout: any = null
+  private flags = {
+    abortStartup: false,
+    abortShutdown: false
+  }
+
+  private timers: {
+    shutdown: NodeJS.Timeout | undefined,
+    disableAccess: NodeJS.Timeout | undefined,
+    switchTimeout: NodeJS.Timeout | undefined
+  } = {
+    shutdown: undefined,
+    disableAccess: undefined,
+    switchTimeout: undefined
+  }
+  
 
   constructor() {
     this.pins.LEDs.red.enable()
 
     // Watch the main physical switch for changes
     this.pins.mainSwitch.watch(() => {
-      clearTimeout(this.switchTimeout)
-      this.switchTimeout = setTimeout(() => {
+      clearTimeout(this.timers.switchTimeout)
+      this.timers.switchTimeout = setTimeout(() => {
         if (this.mainSwitchOn()) {
           this.startAll()
         } else {
@@ -219,7 +231,7 @@ class LaserAccessManager {
   }
 
   public async startAll(): Promise<any> {
-    this.startTimers.abortStartup = false
+    this.flags.abortStartup = false
 
     if (!this.state.authorized) {
       this.pins.LEDs.red.blink(150)
@@ -243,8 +255,8 @@ class LaserAccessManager {
       return Promise.all([this.startBlower(), this.startLaser()])
     }
 
-    if (this.startTimers.shutdown) {
-      this.startTimers.abortShutdown = true
+    if (this.timers.shutdown) {
+      this.flags.abortShutdown = true
     }
 
     if (this.state.chillerRunning) {
@@ -257,8 +269,7 @@ class LaserAccessManager {
 
     await this.startChiller()
 
-    this.startTimers.startup = null
-    if (this.startTimers.abortStartup) {
+    if (this.flags.abortStartup) {
       debug('Startup aborted')
       return Promise.resolve('Startup aborted')
     }
@@ -268,11 +279,11 @@ class LaserAccessManager {
   }
 
   public async shutdownAll(): Promise<any> {
-    if (this.startTimers.shutdown && !this.startTimers.abortShutdown) {
+    if (this.timers.shutdown && !this.flags.abortShutdown) {
       debug("Shutdown requested but it's already in progress")
       return
     }
-    this.startTimers.abortShutdown = false
+    this.flags.abortShutdown = false
     this.setStatus(Events.Status.ShuttingDown)
 
     if (this.state.laserWasStarted) {
@@ -281,9 +292,9 @@ class LaserAccessManager {
       await this.pins.LEDs.green.blink(300)
 
       await new Promise((resolve, reject) => {
-        this.startTimers.shutdown = setTimeout(() => {
-          this.startTimers.shutdown = null
-          if (this.startTimers.abortShutdown) {
+        this.timers.shutdown = setTimeout(() => {
+          this.timers.shutdown = undefined
+          if (this.flags.abortShutdown) {
             reject('Shutdown aborted')
           } else {
             this.setStatus(Events.Status.Shutdown)
@@ -297,9 +308,9 @@ class LaserAccessManager {
       })
 
       return;
-      
+
     } else {
-      this.startTimers.abortStartup = true
+      this.flags.abortStartup = true
       this.pins.LEDs.green.disable()
       this.setStatus(Events.Status.Shutdown)
       return Promise.all([this.shutdownLaser(), this.shutdownBlower(), this.shutdownChiller()])
@@ -310,13 +321,13 @@ class LaserAccessManager {
     debug('Grant access request')
     this.state.authorized = true
     this.dispatch.emit(Events.Access.Granted)
-    if (this.disableAccessTimer) {
-      clearTimeout(this.disableAccessTimer)
+    if (this.timers.disableAccess) {
+      clearTimeout(this.timers.disableAccess)
     }
-    this.disableAccessTimer = setTimeout(() => {
+    this.timers.disableAccess = setTimeout(() => {
       this.dispatch.emit(Events.Access.Pending)
       this.state.authorized = false
-      this.disableAccessTimer = null
+      this.timers.disableAccess = undefined
     }, 20000)
   }
 
