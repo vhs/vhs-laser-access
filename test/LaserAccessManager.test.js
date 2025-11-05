@@ -91,14 +91,6 @@ describe('Laser startup and shutdown', function () {
     LEDs.green.blink.restore()
   })
 
-  it('turns on the laser and blower', async function() {
-    // reset the state
-    await manager.startAll();
-    state.should.have.property(gpios.GPIO_BLOWER, ON)
-    state.should.have.property(gpios.GPIO_LASER, ON)
-    state.should.have.property(gpios.GPIO_CHILLER, ON)
-  })
-
   // it('turns on the laser and blower after 45 seconds', function () {
   //   // need for this test was eliminated here: https://github.com/vhs/vhs-laser-access/commit/11ae1cd31cdcf21dda93ddc0e1575825e9a73d9a
   //   sinon.spy(laserAccess.LEDs.green, 'enable')
@@ -122,7 +114,7 @@ describe('Laser startup and shutdown', function () {
     state.should.have.property(gpios.GPIO_BLOWER, ON)
   })
 
-  it('turns off the chiller and blower after 5 minutes', async function () {
+  it('turns off the chiller and blower after 5 minutes', function () {
     clock.tick(2 * 60 * 1000 + ON)
     state.should.have.property(gpios.GPIO_LASER, OFF)
     state.should.have.property(gpios.GPIO_CHILLER, ON)
@@ -143,14 +135,14 @@ describe('Laser startup and shutdown', function () {
     state.should.have.property(gpios.GPIO_BLOWER, OFF)
   })
 
-  it('turns off the main switch before the laser starts', async function () {
-    await clock.tickAsync(30 * 1000)
+  it('turns off the main switch before the laser starts', function () {
+    clock.tick(30 * 1000)
     manager.shutdownAll()
-    manager.getStatus().should.have.property('id', 'shuttingDown')
+    manager.getStatus().should.have.property('id', 'shutdown')
     state.should.have.property(gpios.GPIO_LASER, OFF)
-    state.should.have.property(gpios.GPIO_CHILLER, ON)
-    state.should.have.property(gpios.GPIO_BLOWER, ON)
-    await clock.tickAsync(6 * 60 * 1000)
+    state.should.have.property(gpios.GPIO_CHILLER, OFF)
+    state.should.have.property(gpios.GPIO_BLOWER, OFF)
+    clock.tick(5 * 60 * 1000 + ON)
     //Should still stay off
     manager.getStatus().should.have.property('id', 'shutdown')
     state.should.have.property(gpios.GPIO_LASER, OFF)

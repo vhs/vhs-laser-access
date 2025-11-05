@@ -1,4 +1,3 @@
-import CryptoJS from 'crypto-js'
 import { config } from "../Configuration"
 
 const requestURI = '/s/vhs/data/laser/update'
