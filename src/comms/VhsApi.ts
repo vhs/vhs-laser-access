@@ -1,6 +1,7 @@
 import { config } from "../Configuration"
 
 const requestURI = '/s/vhs/data/laser/update'
+import CryptoJS from 'crypto-js'
 
 export namespace VhsApi {
     export function statusUpdate (statusStr: string) {

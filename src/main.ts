@@ -28,8 +28,4 @@ async function start() {
   }
 }
 
-manager.sendAPILaserUpdate("on").then((data)=>{
-  debug("sent api, response is ", data)
-})
-
 start()

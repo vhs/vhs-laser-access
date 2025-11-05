@@ -1,6 +1,4 @@
-import CryptoJS from 'crypto-js'
 import debugLib from 'debug'
-import { config } from '../Configuration'
 import { Led } from './Led'
 import { gpios, ON, OFF } from './GpiosConstants'
 import { Gpio as RealGpio } from 'onoff';
