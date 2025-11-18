@@ -5,7 +5,7 @@ import { config } from '../Configuration';
 export function ApiController(instance: FastifyInstance, _: any, done: () => void) {
   // Activate route
   instance.all('/activate', async (request: FastifyRequest, reply: FastifyReply) => {
-    if (!config.bypassAuth) {
+    if (!config.skipAuth) {
       try {
         await request.jwtVerify();  // Verify the JWT token
       } catch {
