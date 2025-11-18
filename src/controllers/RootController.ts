@@ -1,6 +1,7 @@
 import debugLib from 'debug'
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { manager, LaserStatusEvent } from '../hardware/LaserAccessManager'
+import { config } from '../Configuration'
 
 const debug = debugLib('laser:web')
 
@@ -10,11 +11,13 @@ const debug = debugLib('laser:web')
 export async function RootController(instance: FastifyInstance, _: any) {
   // Root route
   instance.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      await request.jwtVerify();  // Verify the JWT token
-    } catch {
-      reply.redirect('/login')
-      return;
+    if (!config.skipAuth) {
+      try {
+        await request.jwtVerify();  // Verify the JWT token
+      } catch {
+        reply.redirect('/login')
+        return;
+      }
     }
     
     return reply.view('index', {

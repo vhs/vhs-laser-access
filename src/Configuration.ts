@@ -16,7 +16,8 @@ export interface Configuration {
         cookieName: string // "vhsAuthJwt",
         secret: string // "<jwtSecret>"
     },
-    port: number
+    port: number,
+    skipAuth: boolean
 }
 
 export const config: Configuration = require('../config.json');
