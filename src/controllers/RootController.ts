@@ -2,6 +2,7 @@ import debugLib from 'debug'
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { manager, LaserStatusEvent } from '../hardware/LaserAccessManager'
 import { config } from '../Configuration'
+import { mqttManager } from '../comms/MqttManager'
 
 const debug = debugLib('laser:web')
 
@@ -33,6 +34,7 @@ export async function RootController(instance: FastifyInstance, _: any) {
 
   manager.on('laser', (event: LaserStatusEvent) => {
     debug('New event from laser ' + event.id)
+    mqttManager.sendUsage(event.id, "system");
     instance.io.emit('laser', event);
   })
 

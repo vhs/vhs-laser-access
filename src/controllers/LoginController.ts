@@ -1,7 +1,8 @@
 // login routes
 
 import { CookieSerializeOptions } from "@fastify/cookie";
-import { FastifyInstance, FastifyReply, FastifyRequest, RouteShorthandOptions } from "fastify"
+import { FastifyInstance, RouteShorthandOptions } from "fastify"
+import { mqttManager } from "../comms/MqttManager";
 
 // this is done to keep all the config in index.ts, while splitting the code into two files
 interface LoginRouteOptions {
@@ -41,6 +42,11 @@ interface LoginBody {
     password: string;
 }
 
+export interface JwtPayload {
+    userId: string;
+    permission: string;
+}
+
 const cookieOptions: CookieSerializeOptions = {
     //domain: 'foo.local',
     path: '/',
@@ -57,7 +63,6 @@ export async function LoginController(instance: FastifyInstance, options: LoginR
     })
 
     instance.get("/login/out", (req, reply) => {
-        let queryObj = req.query as LoginQuery
         let opts = structuredClone(cookieOptions);
         opts.expires = new Date(1999, 3, 31);
         reply.setCookie(options.jwtCookieName, "deleted", opts)
@@ -112,12 +117,18 @@ export async function LoginController(instance: FastifyInstance, options: LoginR
                 throw new Error(`User does not have ${seeking_permission} permission`)
             }
 
-            // ok all the tests are passed, so send a JWT and redirect to the main page
-            const token = await reply.jwtSign({
-                userId: data.id ?? "no_id",
-                permission: seeking_permission
-            })
+            let userId = data.id ?? "id_missing";
 
+            // ok all the tests are passed, so send a JWT and redirect to the main page
+
+            const payload: JwtPayload = {
+                userId: userId,
+                permission: seeking_permission
+            }
+
+            const token = await reply.jwtSign(payload)
+
+            mqttManager.sendUsage("login", userId);
             reply.setCookie(options.jwtCookieName, token, cookieOptions).redirect('/')
 
         } catch (e: unknown) {

@@ -10,38 +10,54 @@ const debug = debugLib('laser:mqtt')
 export class MqttManager {
     private client: mqtt.MqttClient | null = null
     public maintenanceStatus: string = 'ok'
+    private statusTopic: string
+    private eventTopic: string
 
-    constructor() {
-        const mqttServer = config.mqtt.server || "mqtt://127.0.0.1"
-        const mqttTopic = config.mqtt.topic || 'laser/maintenance'
+    constructor(server: string, statusSopic: string, eventTopic: string = 'laser/usage') {
+        const mqttServer = server
+        this.statusTopic = statusSopic
+        this.eventTopic = eventTopic
 
         if (process.env.NODE_ENV !== 'test') {
-            const mqttClient = mqtt.connect(mqttServer, config.mqtt.options)
+            this.client = mqtt.connect(mqttServer, config.mqtt.options)
 
-            mqttClient.on('connect', () => {
+            this.client?.on('connect', () => {
                 debug('Connected to MQTT broker')
-                mqttClient.subscribe(mqttTopic, (err) => {
+                this.client?.subscribe(this.statusTopic, (err) => {
                     if (err) {
-                        console.error(`Failed to subscribe to topic: ${mqttTopic}`)
+                        console.error(`Failed to subscribe to topic: ${this.statusTopic}`)
                     } else {
-                        debug(`Subscribed to MQTT topic: ${mqttTopic}`)
+                        debug(`Subscribed to MQTT topic: ${this.statusTopic}`)
                     }
                 })
             })
 
-            mqttClient.on('message', (topic, message) => {
-                if (topic === mqttTopic) {
+            this.client?.on('message', (topic, message) => {
+                if (topic === this.statusTopic) {
                     this.maintenanceStatus = message.toString()
-                    debug(`Received message on ${mqttTopic}: ${this.maintenanceStatus}`)
+                    debug(`Received message on ${this.statusTopic}: ${this.maintenanceStatus}`)
                 }
             })
 
-            mqttClient.on('error', (err) => {
+            this.client?.on('error', (err) => {
                 console.error('MQTT error:', err)
             })
         }
 
     }
+
+    public sendUsage(event: string, userId: string) {
+        debug(`sending mqtt usage event: ${event} for user: ${userId}`)
+        this.client?.publish(this.eventTopic, JSON.stringify({
+            event: event,
+            userId: userId,
+            timestamp: new Date().toISOString()
+        }))
+    }
 }
 
-export const mqttManager = new MqttManager()
+export const mqttManager = new MqttManager(
+    config.mqtt.server || "mqtt://127.0.0.1",
+    config.mqtt.statusTopic || 'laser/maintenance',
+    config.mqtt.eventTopic || 'laser/usage'
+)

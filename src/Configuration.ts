@@ -5,7 +5,8 @@ export interface Configuration {
     mqtt: {
         server: string // "mqtt://127.0.0.1"
         options: any // null
-        topic: string // "laser/maintenance"
+        statusTopic: string // "laser/maintenance"
+        eventTopic: string // "laser/usage"
     },
     api: {
         baseUrl: string // "https://api.vanhack.ca"
