@@ -52,7 +52,7 @@ export class MqttManager {
             event: event,
             userId: userId,
             timestamp: new Date().toISOString()
-        }))
+        }), { retain: true });
     }
 }
 
