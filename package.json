@@ -14,19 +14,19 @@
     "@fastify/formbody": "^8.0.2",
     "@fastify/jwt": "^10.0.0",
     "@fastify/one-line-logger": "^2.0.2",
-    "@fastify/static": "^8.3.0",
+    "@fastify/static": "^10.1.2",
     "@fastify/view": "^11.1.1",
     "crypto-js": "^4.2.0",
     "debug": "~4.4.0",
-    "express": "~4.21.2",
-    "fastify": "^5.6.1",
+    "express": "~4.22.3",
+    "fastify": "^5.12.8",
     "fastify-socket": "^5.1.4",
     "mqtt": "^4.3.7",
     "onoff": "^6.0.3",
     "promise": "~6.1.0",
     "pug": "^3.0.3",
     "socket.io": "^4.8.1",
-    "underscore": "^1.8.2"
+    "underscore": "^1.13.8"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",
@@ -43,11 +43,11 @@
     "chai-as-promised": "^7.1.2",
     "jshint": "^2.13.6",
     "jshint-stylish": "^2.2.1",
-    "mocha": "^11.7.4",
-    "nyc": "^17.1.0",
+    "mocha": "^12.0.3",
+    "nyc": "^18.0.0",
     "sinon": "^21.0.0",
     "typescript": "^5.6.2",
-    "wireit": "^0.14.9"
+    "wireit": "^0.14.13"
   },
   "jshintConfig": {
     "node": true,
